@@ -1,0 +1,3 @@
+# Cloudflare Pages redirects
+# SPA fallback: all 404s go to index.html
+/*    /index.html   200

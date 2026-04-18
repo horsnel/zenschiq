@@ -1,0 +1,13 @@
+# Cloudflare Pages configuration
+# This file is optional — Cloudflare Pages auto-detects static sites.
+# It's included for explicit configuration and future Cloudflare Workers integration.
+
+name = "zenschiq"
+compatibility_date = "2024-12-01"
+
+# Pages project settings
+[site]
+bucket = "."
+
+# Headers for performance & security
+# These will be applied by Cloudflare's edge network

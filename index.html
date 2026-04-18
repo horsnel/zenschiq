@@ -1,0 +1,2719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>ZenschIQ — Sovereign Intelligence Terminal</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+/* ═══════════════════════════════════════════
+   TOKENS
+═══════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:14px;scroll-behavior:smooth}
+
+:root{
+  --obs:       #020617;
+  --surface:   #0f172a;
+  --raised:    #111827;
+  --card:      rgba(15,23,42,.82);
+  --border:    rgba(255,255,255,.05);
+  --border-em: rgba(16,185,129,.35);
+  --em:        #10b981;
+  --em-dim:    #059669;
+  --em-glow:   rgba(16,185,129,.18);
+  --em-glow2:  rgba(16,185,129,.35);
+  --em-glow3:  rgba(16,185,129,.06);
+  --txt:       #f8fafc;
+  --txt2:      #94a3b8;
+  --txt3:      #475569;
+  --red:       #f43f5e;
+  --gold:      #f59e0b;
+  --blue:      #3b82f6;
+  --slate:     #475569;   /* muted delete/dismiss actions */
+  --ff:        'Inter', sans-serif;
+  --ff-mono:   'Roboto Mono', monospace;
+  --trans:     0.3s ease-in-out;
+}
+
+html{min-height:100%}
+body{
+  background:var(--obs);
+  color:var(--txt);
+  font-family:var(--ff);
+  overflow-x:hidden;
+  cursor:default;
+  min-height:100vh;
+}
+
+/* grain texture */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  opacity:.6;
+}
+
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:2px}
+::selection{background:var(--em-glow2);color:var(--em)}
+
+/* ═══════════════════════════════════════════
+   GLASSMORPHISM CARD BASE
+═══════════════════════════════════════════ */
+.glass{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+}
+.glass-sm{
+  background:rgba(15,23,42,.75);
+  border:1px solid var(--border);
+  border-radius:10px;
+  backdrop-filter:blur(8px);
+}
+
+/* ═══════════════════════════════════════════
+   TICKER TAPE — darker floating status bar
+═══════════════════════════════════════════ */
+.ticker-tape{
+  position:fixed;top:0;left:0;right:0;z-index:300;
+  height:30px;
+  background:rgba(1,3,12,.95);          /* darker than body */
+  border-bottom:1px solid rgba(255,255,255,.04);
+  box-shadow:0 4px 24px rgba(0,0,0,.6); /* floating shadow */
+  overflow:hidden;display:flex;align-items:center;
+  backdrop-filter:blur(20px);
+}
+.ticker-label{
+  font-family:var(--ff-mono);font-size:9px;font-weight:600;
+  color:var(--em);letter-spacing:2px;text-transform:uppercase;
+  padding:0 14px;border-right:1px solid var(--border);
+  height:30px;display:flex;align-items:center;flex-shrink:0;
+  background:rgba(16,185,129,.06);
+}
+.ticker-inner{
+  display:flex;white-space:nowrap;
+  animation:ttape 42s linear infinite;
+}
+.tick{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:0 18px;border-right:1px solid rgba(255,255,255,.04);
+  font-family:var(--ff-mono);font-size:10px;height:30px;
+}
+.tick-pair{color:var(--txt3)}
+.tick-price{color:var(--txt);font-weight:500}
+.tick-up{color:var(--em)}
+.tick-dn{color:var(--red)}
+.tick-score{
+  background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.14);
+  color:var(--em);padding:1px 5px;border-radius:3px;font-size:9px;
+}
+@keyframes ttape{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* ═══════════════════════════════════════════
+   NAV
+═══════════════════════════════════════════ */
+.nav{
+  position:fixed;top:30px;left:0;right:0;z-index:299;
+  height:54px;display:flex;align-items:center;
+  padding:0 24px;gap:0;
+  background:rgba(2,6,23,.82);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(24px);
+  box-shadow:0 1px 0 rgba(255,255,255,.03);
+}
+.nav-logo{
+  font-family:var(--ff);font-size:18px;font-weight:900;
+  letter-spacing:-1px;margin-right:28px;cursor:pointer;
+  display:flex;align-items:center;
+}
+.nav-logo em{font-style:normal;color:var(--em);
+  text-shadow:0 0 20px var(--em-glow2),0 0 40px var(--em-glow)}
+.nav-links{display:flex;gap:2px;flex:1}
+.nav-a{
+  font-size:12px;font-weight:500;color:var(--txt3);
+  padding:6px 13px;border-radius:7px;cursor:pointer;
+  transition:color var(--trans),background var(--trans),border-color var(--trans);
+  border:1px solid transparent;white-space:nowrap;
+}
+.nav-a:hover{color:var(--txt);background:rgba(255,255,255,.03)}
+.nav-a.active{color:var(--em);background:var(--em-glow3);border-color:rgba(16,185,129,.14)}
+.nav-right{display:flex;align-items:center;gap:8px;margin-left:auto}
+
+/* ─ ghost btn ─ */
+.btn-ghost{
+  font-family:var(--ff);font-size:12px;font-weight:600;
+  padding:7px 18px;border-radius:8px;cursor:pointer;
+  background:transparent;color:var(--txt2);
+  border:1px solid var(--border);
+  transition:border-color var(--trans),color var(--trans);
+}
+.btn-ghost:hover{border-color:var(--em);color:var(--em)}
+
+/* ─ PRIMARY CTA with shimmer ─ */
+.btn-cta{
+  font-family:var(--ff);font-size:12px;font-weight:700;
+  padding:8px 20px;border-radius:8px;cursor:pointer;border:none;
+  background:var(--em);color:#020617;
+  position:relative;overflow:hidden;
+  box-shadow:0 0 20px var(--em-glow),0 2px 8px rgba(0,0,0,.4);
+  transition:box-shadow var(--trans),transform .15s;
+}
+.btn-cta::after{
+  content:'';
+  position:absolute;top:0;left:-100%;width:60%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.28),transparent);
+  animation:shimmer 5s ease-in-out infinite;
+  transform:skewX(-12deg);
+}
+@keyframes shimmer{
+  0%,100%{left:-100%;opacity:0}
+  40%{opacity:1}
+  60%{left:160%;opacity:0}
+}
+.btn-cta:hover{
+  box-shadow:0 0 36px var(--em-glow2),0 4px 16px rgba(0,0,0,.4);
+  transform:translateY(-1px);
+}
+
+/* ═══════════════════════════════════════════
+   PAGE SYSTEM
+═══════════════════════════════════════════ */
+.pg{display:none;padding-top:84px;min-height:100vh;position:relative;z-index:1}
+.pg.on{display:block}
+.container{max-width:1280px;margin:0 auto;padding:0 28px}
+
+/* page-fade transition */
+.pg.on{animation:pageFade .35s ease-out both}
+@keyframes pageFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ═══════════════════════════════════════════
+   HERO CANVAS + HERO
+═══════════════════════════════════════════ */
+#hero-canvas{
+  position:absolute;top:0;left:0;right:0;
+  height:100vh;z-index:0;pointer-events:none;
+}
+.hero-wrap{
+  min-height:100vh;display:flex;align-items:center;
+  position:relative;z-index:1;padding-top:84px;
+}
+.hero-inner{max-width:860px;margin:0 auto;text-align:center;padding:5rem 28px 4rem}
+
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:var(--ff-mono);font-size:10px;letter-spacing:1.5px;color:var(--em);
+  margin-bottom:2rem;padding:5px 14px;border-radius:20px;
+  background:var(--em-glow3);border:1px solid rgba(16,185,129,.18);
+}
+.pulse-dot{
+  width:6px;height:6px;background:var(--em);border-radius:50%;flex-shrink:0;
+  animation:pulseDot 2s ease infinite;
+}
+@keyframes pulseDot{
+  0%,100%{box-shadow:0 0 0 0 var(--em-glow2)}
+  50%{box-shadow:0 0 0 7px transparent}
+}
+
+.hero-title{
+  font-size:clamp(50px,8vw,96px);font-weight:900;
+  line-height:.94;letter-spacing:-4px;margin-bottom:1.75rem;
+}
+.hw1{color:var(--txt);display:block}
+.hw2{
+  color:var(--em);display:block;
+  text-shadow:0 0 80px rgba(16,185,129,.4),0 0 160px rgba(16,185,129,.15);
+}
+.hw3{color:var(--txt3);display:block;font-size:58%;letter-spacing:-2px;margin-top:.1em}
+
+.hero-sub{
+  font-size:15px;color:var(--txt2);max-width:520px;
+  margin:0 auto 2.5rem;line-height:1.8;font-weight:400;
+}
+.hero-sub strong{color:var(--txt)}
+
+.hero-ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:3.5rem}
+.btn-hero{
+  font-family:var(--ff);font-size:14px;font-weight:700;
+  padding:13px 28px;border-radius:10px;cursor:pointer;
+  transition:all .2s;text-decoration:none;display:inline-block;
+}
+.btn-hero-em{
+  background:var(--em);color:#020617;border:none;
+  position:relative;overflow:hidden;
+  box-shadow:0 0 24px var(--em-glow),0 4px 16px rgba(0,0,0,.4);
+}
+.btn-hero-em::after{
+  content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.28),transparent);
+  animation:shimmer 5s ease-in-out infinite;transform:skewX(-12deg);
+}
+.btn-hero-em:hover{box-shadow:0 0 48px var(--em-glow2);transform:translateY(-2px)}
+.btn-hero-ghost{
+  background:transparent;color:var(--txt2);
+  border:1px solid var(--border);
+}
+.btn-hero-ghost:hover{border-color:rgba(16,185,129,.3);color:var(--em)}
+
+.hero-stats{
+  display:flex;justify-content:center;gap:0;
+  background:rgba(15,23,42,.7);border:1px solid var(--border);
+  border-radius:12px;backdrop-filter:blur(12px);
+  overflow:hidden;max-width:620px;margin:0 auto;
+}
+.hstat{flex:1;padding:15px 18px;text-align:center;border-right:1px solid var(--border)}
+.hstat:last-child{border-right:none}
+.hstat-num{
+  font-family:var(--ff-mono);font-size:20px;font-weight:600;
+  color:var(--em);line-height:1;margin-bottom:4px;
+}
+.hstat-label{font-size:10px;color:var(--txt3);letter-spacing:.3px}
+
+/* social proof */
+.sp-row{
+  display:flex;align-items:center;justify-content:center;
+  gap:1.75rem;padding:1.5rem 0;flex-wrap:wrap;
+  border-top:1px solid var(--border);
+}
+.sp-item{font-family:var(--ff-mono);font-size:10px;color:var(--txt3);display:flex;align-items:center;gap:5px}
+.sp-em{color:var(--em)}
+
+/* ═══════════════════════════════════════════
+   SECTION SHELL
+═══════════════════════════════════════════ */
+.sec{padding:5.5rem 0}
+.sec-ey{font-family:var(--ff-mono);font-size:10px;color:var(--em);letter-spacing:2px;text-transform:uppercase;margin-bottom:.6rem}
+.sec-title{font-size:clamp(30px,4vw,50px);font-weight:900;letter-spacing:-2px;line-height:1.05;margin-bottom:.9rem}
+.sec-sub{color:var(--txt2);max-width:460px;line-height:1.75;font-size:14px}
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent)}
+
+/* ═══════════════════════════════════════════
+   STEPS (HOW IT WORKS)
+═══════════════════════════════════════════ */
+.steps{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:1.5px;background:var(--border);border-radius:16px;overflow:hidden;margin-top:2.5rem;
+}
+.step{
+  background:var(--obs);padding:2.25rem 1.75rem;
+  position:relative;transition:background var(--trans);
+}
+.step:hover{background:rgba(16,185,129,.03)}
+.step::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--em),transparent);
+  opacity:0;transition:opacity var(--trans);
+}
+.step:hover::after{opacity:1}
+.step-n{font-family:var(--ff-mono);font-size:9px;color:var(--em);letter-spacing:2px;margin-bottom:1.1rem}
+.step-ic{
+  width:40px;height:40px;border-radius:9px;
+  background:var(--em-glow3);border:1px solid rgba(16,185,129,.18);
+  display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:1.1rem;
+}
+.step-t{font-size:16px;font-weight:800;letter-spacing:-.4px;margin-bottom:.5rem}
+.step-d{font-size:12px;color:var(--txt2);line-height:1.65}
+
+/* ═══════════════════════════════════════════
+   FEATURES BENTO
+═══════════════════════════════════════════ */
+.bento{
+  display:grid;grid-template-columns:repeat(12,1fr);
+  gap:1.5px;background:var(--border);border-radius:18px;
+  overflow:hidden;margin-top:2.5rem;
+}
+.bc{
+  background:var(--obs);padding:1.75rem;
+  position:relative;overflow:hidden;
+  transition:background var(--trans);cursor:default;
+}
+.bc:hover{background:rgba(16,185,129,.025)}
+.bc::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% -20%,rgba(16,185,129,.07) 0%,transparent 70%);
+  opacity:0;transition:opacity .4s;
+}
+.bc:hover::before{opacity:1}
+.bc-4{grid-column:span 4}
+.bc-6{grid-column:span 6}
+.bc-12{grid-column:span 12}
+.bc-tag{font-family:var(--ff-mono);font-size:9px;color:var(--txt3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:.9rem}
+.bc-ic{font-size:26px;margin-bottom:.9rem;display:block}
+.bc-t{font-size:16px;font-weight:800;letter-spacing:-.4px;margin-bottom:.45rem}
+.bc-d{font-size:12px;color:var(--txt2);line-height:1.6}
+.bc-pill{
+  display:inline-block;margin-top:.7rem;
+  font-family:var(--ff-mono);font-size:9px;
+  background:var(--raised);border:1px solid rgba(255,255,255,.06);
+  color:var(--txt3);padding:2px 8px;border-radius:3px;letter-spacing:.5px;
+}
+
+/* intel preview rows */
+.ipr-list{display:flex;flex-direction:column;gap:5px;margin-top:1rem}
+.ipr{
+  background:rgba(15,23,42,.8);border:1px solid var(--border);
+  border-radius:7px;padding:8px 12px;
+  display:flex;align-items:center;gap:10px;font-family:var(--ff-mono);font-size:10px;
+}
+.ipr-pair{color:var(--txt);font-weight:500;min-width:60px}
+.ipr-bar{flex:1;height:2px;background:rgba(255,255,255,.06);border-radius:1px;overflow:hidden}
+.ipr-fill{height:100%;background:var(--em)}
+.ipr-sc{color:var(--em);min-width:22px;text-align:right}
+.ipr-chg{font-size:10px;min-width:40px;text-align:right}
+
+/* ═══════════════════════════════════════════
+   TRADING BOTS MARKETPLACE
+═══════════════════════════════════════════ */
+.bots-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;margin-top:2.5rem}
+.bot-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;backdrop-filter:blur(14px);
+  overflow:hidden;transition:border-color var(--trans),transform .2s,box-shadow .2s;
+  position:relative;
+}
+.bot-card:hover{
+  border-color:rgba(16,185,129,.25);
+  transform:translateY(-4px);
+  box-shadow:0 24px 60px rgba(0,0,0,.45),0 0 0 1px rgba(16,185,129,.08);
+}
+.bot-card.featured{
+  border-color:rgba(16,185,129,.28);
+  background:linear-gradient(145deg,rgba(15,23,42,.9),rgba(6,22,16,.85));
+}
+.bot-top-bar{
+  position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--em) 50%,transparent);
+  opacity:0;transition:opacity var(--trans);
+}
+.bot-card.featured .bot-top-bar,
+.bot-card:hover .bot-top-bar{opacity:1}
+
+.bot-hdr{padding:1.25rem 1.25rem .85rem}
+.bot-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.9rem}
+.bot-icon{
+  width:44px;height:44px;border-radius:11px;
+  background:var(--em-glow3);border:1px solid rgba(16,185,129,.18);
+  display:flex;align-items:center;justify-content:center;font-size:20px;
+}
+
+/* ── improved bot badge — glass label, larger ── */
+.bot-badge{
+  font-family:var(--ff-mono);font-size:11px;font-weight:600;
+  padding:4px 11px;border-radius:6px;letter-spacing:.8px;
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+}
+.bb-live{background:rgba(16,185,129,.14);border:1px solid rgba(16,185,129,.28);color:var(--em)}
+.bb-new{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.25);color:var(--gold)}
+.bb-hot{background:rgba(244,63,94,.12);border:1px solid rgba(244,63,94,.25);color:var(--red)}
+
+.bot-name{font-size:16px;font-weight:800;letter-spacing:-.4px;margin-bottom:3px}
+.bot-sub{font-size:11px;color:var(--txt2)}
+
+.bot-stats{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+}
+.bot-stat{padding:10px 12px;text-align:center;border-right:1px solid var(--border)}
+.bot-stat:last-child{border-right:none}
+.bs-val{font-family:var(--ff-mono);font-size:14px;font-weight:500;margin-bottom:2px}
+.bs-lbl{font-family:var(--ff-mono);font-size:9px;color:var(--txt3);letter-spacing:.5px}
+
+/* sparkline + 30D label */
+.bot-chart-wrap{
+  padding:8px 1.25rem 4px;
+  position:relative;
+}
+.bot-chart-wrap svg{display:block;width:100%}
+.bot-30d{
+  font-family:var(--ff-mono);font-size:9px;color:var(--txt3);
+  position:absolute;right:1.25rem;bottom:6px;
+}
+
+.bot-body{padding:.85rem 1.25rem 1.25rem}
+.bot-desc{font-size:11px;color:var(--txt2);line-height:1.6;margin-bottom:.85rem}
+.bot-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:1rem}
+.btag{
+  font-family:var(--ff-mono);font-size:9px;
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);
+  color:var(--txt3);padding:2px 7px;border-radius:3px;letter-spacing:.5px;
+}
+.bot-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  padding-top:.85rem;border-top:1px solid var(--border);
+}
+.bot-price{font-family:var(--ff-mono);font-size:17px;font-weight:500}
+.bot-price sub{font-size:10px;color:var(--txt3);font-weight:400}
+.bot-price-note{font-size:9px;color:var(--txt3);margin-top:1px}
+.btn-bot{
+  font-size:11px;font-weight:700;font-family:var(--ff);
+  padding:8px 16px;border-radius:7px;border:none;cursor:pointer;transition:all .2s;
+}
+.btn-bot-em{background:var(--em);color:#020617;box-shadow:0 0 14px var(--em-glow)}
+.btn-bot-em:hover{opacity:.85;transform:translateY(-1px)}
+.btn-bot-ghost{background:transparent;color:var(--txt2);border:1px solid var(--border)}
+.btn-bot-ghost:hover{border-color:var(--em);color:var(--em)}
+
+/* ═══════════════════════════════════════════
+   PRICING
+═══════════════════════════════════════════ */
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;margin-top:2.5rem}
+.price-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:16px;padding:1.75rem;backdrop-filter:blur(12px);
+  transition:border-color var(--trans),transform .2s;
+  position:relative;overflow:hidden;
+}
+.price-card:hover{border-color:rgba(16,185,129,.18);transform:translateY(-3px)}
+.price-card.pro{
+  border-color:rgba(16,185,129,.3);
+  background:linear-gradient(145deg,rgba(15,23,42,.92),rgba(5,18,12,.88));
+  box-shadow:0 0 40px rgba(16,185,129,.07);
+}
+.price-card.pro::before{
+  content:'POPULAR';position:absolute;top:-1px;right:20px;
+  background:var(--em);color:#020617;
+  font-family:var(--ff-mono);font-size:9px;font-weight:600;letter-spacing:1.5px;
+  padding:4px 12px;border-radius:0 0 8px 8px;
+}
+.pc-tier{font-family:var(--ff-mono);font-size:9px;color:var(--txt3);letter-spacing:2px;margin-bottom:.8rem}
+.pc-price{font-family:var(--ff-mono);font-size:38px;font-weight:600;line-height:1;margin-bottom:.2rem}
+.pc-price span{font-size:14px;color:var(--txt3);font-weight:400}
+.pc-desc{font-size:12px;color:var(--txt2);margin-bottom:1.25rem}
+.pc-list{list-style:none;display:flex;flex-direction:column;gap:.55rem;margin-bottom:1.25rem}
+.pc-list li{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--txt2)}
+.pck{color:var(--em);font-size:12px}
+.pcx{color:var(--txt3);font-size:12px}
+.btn-pc{
+  display:block;width:100%;padding:10px;text-align:center;
+  border-radius:8px;font-weight:700;font-size:12px;font-family:var(--ff);
+  cursor:pointer;border:none;transition:all .2s;
+}
+.btn-pc-em{background:var(--em);color:#020617;box-shadow:0 0 18px var(--em-glow)}
+.btn-pc-em:hover{opacity:.85}
+.btn-pc-out{background:transparent;color:var(--txt2);border:1px solid var(--border)}
+.btn-pc-out:hover{border-color:var(--em);color:var(--em)}
+
+/* ═══════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════ */
+footer{
+  background:rgba(15,23,42,.4);border-top:1px solid var(--border);
+  padding:2rem 0;
+}
+.footer-inner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+.footer-logo{font-size:17px;font-weight:900;letter-spacing:-1px}
+.footer-logo em{font-style:normal;color:var(--em)}
+.footer-tagline{font-size:10px;color:var(--txt3);margin-top:2px}
+.footer-links{display:flex;gap:18px;flex-wrap:wrap}
+.footer-links a{font-size:11px;color:var(--txt3);text-decoration:none;transition:color .15s}
+.footer-links a:hover{color:var(--em)}
+.footer-copy{font-family:var(--ff-mono);font-size:10px;color:var(--txt3);text-align:right;line-height:1.6}
+
+/* ═══════════════════════════════════════════
+   APP SHELL
+═══════════════════════════════════════════ */
+#pg-app{padding-top:84px}
+.app-layout{
+  display:flex;
+  /* grow with content — never fixed height */
+  min-height:calc(100vh - 84px);
+}
+
+/* ── SIDEBAR — desktop only ── */
+.sidebar{
+  width:58px;flex-shrink:0;
+  background:rgba(11,18,32,.92);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;align-items:center;
+  padding:14px 0;gap:4px;
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  z-index:10;
+  align-self:flex-start;
+  position:sticky;
+  top:84px;
+  max-height:calc(100vh - 84px);
+  overflow-y:auto;
+}
+.sb-logo{
+  width:30px;height:30px;background:var(--em);border-radius:7px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:900;color:#020617;font-family:var(--ff);
+  margin-bottom:10px;box-shadow:0 0 14px var(--em-glow);
+}
+.sb-item{
+  width:42px;height:42px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:17px;cursor:pointer;
+  position:relative;
+  border:1px solid transparent;
+  /* smooth glow transition */
+  transition:
+    background var(--trans),
+    border-color var(--trans),
+    box-shadow var(--trans);
+}
+.sb-item:hover{background:rgba(16,185,129,.06);border-color:rgba(16,185,129,.12)}
+.sb-item.on{
+  background:rgba(16,185,129,.1);
+  border-color:rgba(16,185,129,.25);
+  box-shadow:0 0 14px var(--em-glow),inset 0 0 8px rgba(16,185,129,.06);
+}
+.sb-badge{
+  position:absolute;top:5px;right:5px;
+  width:6px;height:6px;background:var(--em);border-radius:50%;
+  animation:pulseDot 2s infinite;
+}
+.sb-sep{width:26px;height:1px;background:var(--border);margin:4px 0}
+.sb-bot{margin-top:auto;display:flex;flex-direction:column;align-items:center;gap:4px}
+
+/* ── MAIN CONTENT ── */
+.app-main{
+  flex:1;
+  min-width:0;           /* prevents flex child overflow */
+  padding:18px 22px;
+  background:var(--obs);
+}
+.app-tab{display:none}
+.app-tab.on{display:block;animation:pageFade .25s ease-out both}
+
+/* app header */
+.app-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:18px;
+}
+.app-title{font-size:18px;font-weight:900;letter-spacing:-.75px}
+.app-title span{color:var(--em)}
+.app-meta{
+  font-family:var(--ff-mono);font-size:10px;color:var(--txt3);
+  display:flex;align-items:center;gap:10px;margin-top:2px;
+}
+.dot-live{
+  width:6px;height:6px;background:var(--em);border-radius:50%;
+  animation:pulseDot 2s infinite;display:inline-block;
+}
+
+/* stat cards */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.stat-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:12px;padding:14px;backdrop-filter:blur(10px);
+  position:relative;overflow:hidden;
+  transition:border-color var(--trans);
+}
+.stat-card:hover{border-color:rgba(16,185,129,.18)}
+.stat-card::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--em) 0%,transparent 60%);
+}
+.sc-lbl{font-family:var(--ff-mono);font-size:9px;color:var(--txt3);letter-spacing:1.5px;margin-bottom:5px}
+.sc-val{font-family:var(--ff-mono);font-size:22px;font-weight:600;letter-spacing:-.5px;line-height:1;margin-bottom:3px}
+.sc-sub{font-size:11px;color:var(--txt2)}
+.up{color:var(--em)}
+.dn{color:var(--red)}
+
+/* generic scard */
+.scard{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:12px;padding:14px;backdrop-filter:blur(10px);
+}
+.scard-title{
+  font-family:var(--ff-mono);font-size:9px;color:var(--txt3);
+  letter-spacing:1.5px;text-transform:uppercase;
+  margin-bottom:10px;display:flex;align-items:center;gap:6px;
+}
+
+/* grid layouts */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px}
+
+/* intel table */
+.intel-wrap{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:12px;overflow:hidden;backdrop-filter:blur(10px);margin-bottom:14px;
+}
+.intel-toolbar{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 14px;border-bottom:1px solid var(--border);
+  background:rgba(15,23,42,.5);flex-wrap:wrap;
+}
+.search-box{
+  background:rgba(2,6,23,.8);border:1px solid var(--border);
+  border-radius:7px;padding:7px 12px;color:var(--txt);
+  font-family:var(--ff-mono);font-size:10px;outline:none;
+  transition:border-color var(--trans);max-width:280px;flex:1;
+}
+.search-box:focus{border-color:var(--em)}
+.search-box::placeholder{color:var(--txt3)}
+.filt-btn{
+  font-family:var(--ff-mono);font-size:10px;
+  background:rgba(15,23,42,.7);border:1px solid var(--border);
+  border-radius:6px;padding:6px 11px;color:var(--txt3);
+  cursor:pointer;transition:all var(--trans);white-space:nowrap;
+}
+.filt-btn:hover,.filt-btn.on{
+  border-color:rgba(16,185,129,.3);color:var(--em);background:var(--em-glow3);
+}
+.intel-table{width:100%;border-collapse:collapse}
+.intel-table th{
+  text-align:left;padding:9px 13px;
+  font-family:var(--ff-mono);font-size:9px;color:var(--txt3);
+  letter-spacing:1px;text-transform:uppercase;
+  border-bottom:1px solid var(--border);background:rgba(15,23,42,.35);
+}
+.intel-table td{
+  padding:10px 13px;border-bottom:1px solid rgba(255,255,255,.03);
+  vertical-align:middle;
+}
+.intel-table tr:hover td{background:rgba(16,185,129,.02)}
+.intel-table tr:last-child td{border-bottom:none}
+.cell-pair{font-family:var(--ff-mono);font-size:11px;font-weight:500}
+.cell-cat{
+  font-family:var(--ff-mono);font-size:9px;color:var(--txt3);
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);
+  padding:2px 6px;border-radius:3px;
+}
+.badge-score{
+  font-family:var(--ff-mono);font-size:10px;font-weight:500;
+  padding:2px 7px;border-radius:4px;
+}
+.bs-hi{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.22);color:var(--em)}
+.bs-md{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.18);color:var(--gold)}
+.bs-lo{background:rgba(244,63,94,.08);border:1px solid rgba(244,63,94,.16);color:var(--red)}
+
+/* pagination */
+.pager{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:9px 14px;border-top:1px solid var(--border);
+  font-family:var(--ff-mono);font-size:10px;color:var(--txt3);
+}
+.pg-btns{display:flex;gap:3px}
+.pg-btn{
+  width:24px;height:24px;border-radius:4px;border:1px solid var(--border);
+  background:transparent;color:var(--txt3);font-family:var(--ff-mono);
+  font-size:10px;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;transition:all var(--trans);
+}
+.pg-btn:hover,.pg-btn.on{background:var(--em-glow3);border-color:rgba(16,185,129,.28);color:var(--em)}
+
+/* heatmap cells */
+.hm-cells{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.hm-cell{
+  background:rgba(2,6,23,.6);border:1px solid var(--border);
+  border-radius:8px;padding:9px;transition:border-color var(--trans);
+}
+.hm-cell:hover{border-color:rgba(16,185,129,.18)}
+.hm-pair{font-family:var(--ff-mono);font-size:10px;color:var(--txt);margin-bottom:5px}
+.hm-bar-row{display:flex;align-items:center;gap:5px;margin-bottom:2px}
+.hm-bar-lbl{font-family:var(--ff-mono);font-size:8px;color:var(--txt3);width:24px}
+.hm-bar-track{flex:1;height:3px;background:rgba(255,255,255,.04);border-radius:2px;overflow:hidden}
+.hm-fill-em{height:100%;background:var(--em)}
+.hm-fill-red{height:100%;background:var(--red)}
+.hm-pct{font-family:var(--ff-mono);font-size:8px;width:28px;text-align:right}
+
+/* news feed */
+.nfi{display:flex;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.nfi:last-child{border-bottom:none}
+.nfi-t{font-family:var(--ff-mono);font-size:9px;color:var(--txt3);min-width:46px;padding-top:2px}
+.nfi-x{font-size:11px;color:var(--txt2);line-height:1.45}
+.nfi-x b{color:var(--txt);font-weight:600}
+
+/* ═══════════════════════════════════════════
+   ASSET DEEP-DIVE
+═══════════════════════════════════════════ */
+.pillar-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.pillar{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:12px;padding:14px;text-align:center;
+  backdrop-filter:blur(10px);transition:border-color var(--trans);
+}
+.pillar:hover{border-color:rgba(16,185,129,.2)}
+.pillar-val{
+  font-family:var(--ff-mono);font-size:34px;font-weight:600;
+  color:var(--em);line-height:1;margin-bottom:5px;
+}
+.pillar.featured{
+  border-color:rgba(16,185,129,.32);
+  background:linear-gradient(145deg,rgba(15,23,42,.9),rgba(4,18,12,.85));
+}
+.pillar.featured .pillar-val{
+  font-size:42px;
+  text-shadow:0 0 30px var(--em-glow2),0 0 60px var(--em-glow);
+}
+.pillar-lbl{font-family:var(--ff-mono);font-size:9px;color:var(--txt3);letter-spacing:1.5px;text-transform:uppercase}
+.pillar.featured .pillar-lbl{color:var(--em)}
+
+/* sentiment dial */
+.sent-dial{
+  height:8px;border-radius:4px;
+  background:linear-gradient(90deg,var(--red),var(--gold) 50%,var(--em));
+  position:relative;margin:.75rem 0 .25rem;
+}
+.dial-thumb{
+  position:absolute;top:-4px;width:16px;height:16px;
+  background:var(--em);border-radius:50%;border:2px solid var(--obs);
+  box-shadow:0 0 10px var(--em-glow2);
+  transition:left .5s cubic-bezier(.34,1.56,.64,1);
+}
+.dial-labels{
+  display:flex;justify-content:space-between;
+  font-family:var(--ff-mono);font-size:9px;color:var(--txt3);
+}
+
+/* ═══════════════════════════════════════════
+   AI RESEARCH LAB
+═══════════════════════════════════════════ */
+.lab-layout{
+  display:grid;grid-template-columns:1fr 1fr;gap:12px;
+  height:calc(100vh - 175px);min-height:460px;
+}
+.lab-chat{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:12px;display:flex;flex-direction:column;
+  overflow:hidden;backdrop-filter:blur(12px);
+}
+.lab-canvas-wrap{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:12px;overflow:hidden;backdrop-filter:blur(12px);
+  display:flex;flex-direction:column;
+}
+.lab-hdr{
+  padding:11px 14px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:8px;
+  background:rgba(15,23,42,.5);flex-shrink:0;
+}
+.lab-hdr-title{font-size:12px;font-weight:800;letter-spacing:-.3px}
+
+/* Zenith status with pulse */
+.zenith-status{
+  display:flex;align-items:center;gap:5px;
+  font-family:var(--ff-mono);font-size:9px;color:var(--em);
+}
+.zenith-dot{
+  width:6px;height:6px;background:var(--em);border-radius:50%;
+  animation:pulseDot 1.8s ease infinite;flex-shrink:0;
+}
+
+.lab-chips{display:flex;gap:5px;flex-wrap:wrap;margin-left:auto}
+.lab-chip{
+  font-family:var(--ff-mono);font-size:9px;
+  background:rgba(15,23,42,.8);border:1px solid var(--border);
+  border-radius:5px;padding:4px 9px;color:var(--txt3);
+  cursor:pointer;transition:all var(--trans);
+}
+.lab-chip:hover{border-color:rgba(16,185,129,.28);color:var(--em);background:var(--em-glow3)}
+
+.lab-msgs{flex:1;padding:14px;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
+.lm-ai,.lm-user{display:flex;gap:9px;align-items:flex-start}
+.lm-user{flex-direction:row-reverse}
+.lm-av{
+  width:26px;height:26px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:11px;
+}
+.av-ai{background:linear-gradient(135deg,var(--em),#059669);box-shadow:0 0 10px var(--em-glow)}
+.av-user{background:var(--raised);border:1px solid var(--border)}
+.lm-bubble{
+  max-width:82%;padding:9px 13px;border-radius:9px;
+  font-size:11px;line-height:1.6;
+}
+.lm-bubble-ai{
+  background:rgba(15,23,42,.9);border:1px solid var(--border);
+  color:var(--txt2);border-radius:2px 9px 9px 9px;
+}
+.lm-bubble-ai strong{color:var(--em)}
+.lm-bubble-user{
+  background:var(--em-glow3);border:1px solid rgba(16,185,129,.18);
+  color:var(--txt);border-radius:9px 2px 9px 9px;
+}
+
+.lab-input-area{
+  padding:10px;border-top:1px solid var(--border);
+  display:flex;gap:7px;flex-shrink:0;
+}
+.lab-input{
+  flex:1;background:rgba(2,6,23,.8);border:1px solid var(--border);
+  border-radius:7px;padding:8px 12px;color:var(--txt);
+  font-family:var(--ff);font-size:12px;outline:none;resize:none;
+  height:38px;line-height:1.4;transition:border-color var(--trans);
+}
+.lab-input:focus{border-color:var(--em)}
+.lab-send{
+  background:var(--em);border:none;border-radius:7px;
+  width:36px;height:36px;cursor:pointer;color:#020617;font-size:14px;
+  display:flex;align-items:center;justify-content:center;
+  transition:opacity .2s;flex-shrink:0;align-self:flex-end;
+}
+.lab-send:hover{opacity:.85}
+
+/* AI Canvas ghost placeholders */
+.canvas-body{
+  flex:1;padding:14px;overflow-y:auto;
+}
+.canvas-ghosts{
+  display:flex;flex-direction:column;gap:10px;
+}
+.ghost-block{
+  border-radius:8px;border:1px dashed rgba(16,185,129,.12);
+  background:rgba(16,185,129,.025);
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:6px;padding:16px;
+  animation:ghostPulse 3s ease-in-out infinite;
+}
+.ghost-block:nth-child(2){animation-delay:.8s}
+.ghost-block:nth-child(3){animation-delay:1.6s}
+@keyframes ghostPulse{
+  0%,100%{opacity:.5}50%{opacity:1}
+}
+.ghost-icon{font-size:22px;opacity:.3}
+.ghost-label{font-family:var(--ff-mono);font-size:9px;color:var(--txt3);letter-spacing:1px}
+.ghost-bars{display:flex;gap:3px;align-items:flex-end;height:32px}
+.ghost-bar{
+  width:6px;border-radius:2px 2px 0 0;
+  background:rgba(16,185,129,.15);
+}
+.ghost-line{
+  width:100%;height:2px;border-radius:1px;
+  background:linear-gradient(90deg,rgba(16,185,129,.1),rgba(16,185,129,.25),rgba(16,185,129,.1));
+  margin:2px 0;
+}
+.ghost-table{width:100%}
+.ghost-row{
+  display:flex;gap:6px;margin-bottom:5px;
+}
+.ghost-cell{
+  height:8px;border-radius:3px;
+  background:rgba(255,255,255,.04);
+}
+
+.canvas-report{display:none;flex-direction:column;gap:12px}
+.canvas-report.show{display:flex}
+.cr-hdr{font-size:13px;font-weight:800;margin-bottom:2px}
+.cr-sub{font-family:var(--ff-mono);font-size:9px;color:var(--txt3);margin-bottom:10px}
+
+/* ═══════════════════════════════════════════
+   ALERTS — muted delete buttons
+═══════════════════════════════════════════ */
+.alert-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px;background:rgba(2,6,23,.5);
+  border:1px solid var(--border);border-radius:8px;margin-bottom:6px;
+  transition:border-color var(--trans);
+}
+.alert-item:hover{border-color:rgba(255,255,255,.08)}
+.alert-dot{
+  width:8px;height:8px;border-radius:50%;flex-shrink:0;
+}
+.alert-dot.active{background:var(--em);box-shadow:0 0 6px var(--em-glow)}
+.alert-dot.fired{background:var(--txt3)}
+.alert-name{font-family:var(--ff-mono);font-size:11px;font-weight:500}
+.alert-cond{font-size:11px;color:var(--txt2)}
+.alert-cond b{color:var(--em)}
+.alert-status{
+  font-family:var(--ff-mono);font-size:9px;font-weight:600;
+  padding:2px 8px;border-radius:3px;letter-spacing:.5px;
+}
+.as-active{background:var(--em-glow3);color:var(--em);border:1px solid rgba(16,185,129,.2)}
+.as-fired{background:rgba(255,255,255,.03);color:var(--txt3);border:1px solid var(--border)}
+/* muted delete — slate, not red */
+.btn-del{
+  font-size:13px;background:none;border:none;cursor:pointer;
+  color:var(--slate);transition:color var(--trans);line-height:1;
+  padding:2px 4px;
+}
+.btn-del:hover{color:var(--txt2)}
+
+/* ═══════════════════════════════════════════
+   FULL HEATMAP PAGE
+═══════════════════════════════════════════ */
+.hm-full-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:10px;
+}
+
+/* ═══════════════════════════════════════════
+   BOTS IN APP
+═══════════════════════════════════════════ */
+.bots-app-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+
+/* ═══════════════════════════════════════════
+   ZENITH AGENT BUBBLE
+═══════════════════════════════════════════ */
+.agent-wrap{position:fixed;bottom:22px;right:22px;z-index:400}
+
+/* dim backdrop when open */
+.agent-backdrop{
+  position:fixed;inset:0;z-index:399;
+  background:rgba(2,6,23,.55);
+  backdrop-filter:blur(2px);
+  opacity:0;pointer-events:none;
+  transition:opacity var(--trans);
+}
+.agent-backdrop.show{opacity:1;pointer-events:auto}
+
+.agent-orb{
+  width:52px;height:52px;border-radius:50%;background:var(--em);
+  border:none;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;font-size:22px;color:#020617;
+  animation:orbPulse 3s ease infinite;
+  transition:transform .2s;position:relative;z-index:401;
+  box-shadow:0 0 0 0 var(--em-glow2),0 4px 20px rgba(0,0,0,.4);
+}
+.agent-orb:hover{transform:scale(1.07)}
+@keyframes orbPulse{
+  0%,100%{box-shadow:0 0 0 0 var(--em-glow2),0 4px 20px rgba(0,0,0,.4)}
+  50%{box-shadow:0 0 0 12px transparent,0 4px 20px rgba(0,0,0,.4)}
+}
+
+.agent-panel{
+  position:absolute;bottom:62px;right:0;
+  width:336px;display:none;flex-direction:column;
+  background:rgba(10,17,32,.97);
+  border:1px solid rgba(16,185,129,.22);
+  border-radius:16px;overflow:hidden;
+  box-shadow:
+    0 32px 80px rgba(0,0,0,.7),
+    0 0 0 1px rgba(16,185,129,.05),
+    0 0 60px rgba(16,185,129,.05);
+  backdrop-filter:blur(28px);
+  z-index:401;
+}
+.agent-panel.open{display:flex}
+
+.agent-hdr{
+  padding:12px 14px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:9px;
+}
+.agent-av{
+  width:30px;height:30px;
+  background:linear-gradient(135deg,var(--em),#059669);
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:13px;box-shadow:0 0 10px var(--em-glow);
+}
+.agent-name{font-size:13px;font-weight:800;letter-spacing:-.3px}
+.agent-online{
+  font-family:var(--ff-mono);font-size:9px;color:var(--em);
+  display:flex;align-items:center;gap:4px;
+}
+.agent-online span{
+  width:5px;height:5px;background:var(--em);border-radius:50%;
+  animation:pulseDot 1.8s infinite;
+}
+.agent-msgs{
+  flex:1;padding:12px;display:flex;flex-direction:column;gap:8px;
+  max-height:252px;overflow-y:auto;
+}
+.amsg{max-width:90%;font-size:11px;line-height:1.55;padding:8px 11px;border-radius:8px}
+.amsg-ai{
+  background:rgba(15,23,42,.85);border:1px solid var(--border);
+  color:var(--txt2);align-self:flex-start;border-radius:2px 8px 8px 8px;
+}
+.amsg-ai strong{color:var(--em)}
+.amsg-user{
+  background:var(--em-glow3);border:1px solid rgba(16,185,129,.18);
+  color:var(--txt);align-self:flex-end;border-radius:8px 2px 8px 8px;
+}
+.agent-input-row{
+  padding:9px;border-top:1px solid var(--border);display:flex;gap:7px;
+}
+.agent-in{
+  flex:1;background:rgba(2,6,23,.85);border:1px solid var(--border);
+  border-radius:7px;padding:8px 11px;color:var(--txt);
+  font-family:var(--ff);font-size:11px;outline:none;
+  transition:border-color var(--trans);
+}
+.agent-in:focus{border-color:var(--em)}
+.agent-send{
+  background:var(--em);border:none;border-radius:7px;
+  width:29px;height:29px;cursor:pointer;color:#020617;font-size:13px;
+  display:flex;align-items:center;justify-content:center;transition:opacity .2s;
+}
+.agent-send:hover{opacity:.85}
+.agent-disc{
+  font-family:var(--ff-mono);font-size:8px;color:var(--txt3);
+  padding:0 12px 7px;text-align:center;
+}
+
+/* typing dots */
+.tdots{display:flex;gap:3px;align-items:center;padding:3px 0}
+.td{
+  width:5px;height:5px;background:var(--em);border-radius:50%;
+  animation:tdAnim 1.2s ease infinite;
+}
+.td:nth-child(2){animation-delay:.2s}
+.td:nth-child(3){animation-delay:.4s}
+@keyframes tdAnim{
+  0%,60%,100%{transform:translateY(0);opacity:.3}
+  30%{transform:translateY(-5px);opacity:1}
+}
+
+/* ═══════════════════════════════════════════
+   BOTTOM NAV
+   — hidden by default (desktop)
+   — shown via media query on mobile/tablet
+   — position:fixed always works because
+     body has min-height:100vh
+═══════════════════════════════════════════ */
+.bottom-nav{
+  display:none;
+  position:fixed;
+  bottom:0;left:0;right:0;
+  z-index:249;
+  height:60px;
+  background:rgba(15,23,42,.95);
+  border-top:1px solid rgba(16,185,129,.12);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  padding:0 4px;
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  justify-content:space-around;
+  align-items:center;
+  /* prevent any transform on parents from breaking fixed */
+  will-change:transform;
+}
+.bnav-item{
+  flex:1;
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:2px;
+  padding:4px 2px;border-radius:10px;cursor:pointer;
+  color:var(--txt3);font-family:var(--ff-mono);font-size:9px;
+  letter-spacing:.3px;
+  transition:color var(--trans);
+  -webkit-tap-highlight-color:transparent;
+  position:relative;
+}
+.bnav-icon{
+  width:34px;height:34px;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;
+  border:1px solid transparent;
+  transition:background var(--trans),border-color var(--trans),box-shadow var(--trans);
+}
+.bnav-item.on{color:var(--em)}
+.bnav-item.on .bnav-icon{
+  background:rgba(16,185,129,.10);
+  border-color:rgba(16,185,129,.25);
+  box-shadow:0 0 10px var(--em-glow);
+}
+.bnav-badge{
+  position:absolute;top:4px;right:calc(50% - 22px);
+  width:6px;height:6px;background:var(--em);border-radius:50%;
+  animation:pulseDot 2s infinite;
+}
+
+/* ══════════════════════════════════════════
+   BREAKPOINT ≤ 1023px  (tablet + phone)
+   Chrome on Android always hits this.
+   Everything below uses specificity only —
+   NO !important except where truly needed
+   to beat inline styles.
+══════════════════════════════════════════ */
+@media screen and (max-width:1023px){
+
+  /* ── NAV ── */
+  .sidebar{display:none}
+  .bottom-nav{display:flex}
+  .nav-links{display:none}
+
+  /* ── layout ── */
+  .app-layout{flex-direction:column}
+
+  /* content scrolls above bottom nav */
+  .app-main{
+    padding:14px 16px 72px;
+    overflow-y:visible;
+  }
+
+  /* Zenith FAB above bottom nav */
+  .agent-wrap{bottom:68px}
+  .agent-panel{bottom:62px}
+
+  /* ── grids stack ── */
+  .g2{grid-template-columns:1fr}
+  .g3{grid-template-columns:1fr}
+  .lab-layout{grid-template-columns:1fr}
+  .bots-app-grid{grid-template-columns:1fr}
+  .stats-row{grid-template-columns:1fr}   /* single col on phone */
+  .pillar-grid{grid-template-columns:repeat(3,1fr)}
+  .hm-full-grid{grid-template-columns:repeat(2,1fr)}
+  .bots-grid{grid-template-columns:1fr}
+  .pricing-grid{grid-template-columns:1fr}
+  .steps{grid-template-columns:1fr}
+  .bento{display:flex;flex-direction:column}
+
+  /* ── footer ── */
+  .footer-inner{flex-direction:column;text-align:center}
+  .footer-copy{text-align:center}
+
+  /* ── hero ── */
+  .hero-title{letter-spacing:-2px}
+  .hero-stats{max-width:100%}
+  .hero-inner{padding:2.5rem 20px 2rem}
+
+  /* ── hide non-critical table cols ── */
+  .intel-table th:nth-child(3),
+  .intel-table td:nth-child(3){display:none}
+  .intel-table th:nth-child(8),
+  .intel-table td:nth-child(8){display:none}
+}
+
+/* ══ ≤ 600px extra tightening ══ */
+@media screen and (max-width:600px){
+  .hm-cells{grid-template-columns:1fr}
+  .scard,.stat-card{padding:12px}
+  .app-hdr{flex-wrap:wrap;gap:8px}
+  .app-hdr > div:last-child{margin-left:0}
+}
+/* ═══════════════════════════════════════════
+   INTEL / BLOG TAB
+═══════════════════════════════════════════ */
+.intel-page-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 0 16px;border-bottom:2px solid var(--em);margin-bottom:0;
+}
+.iph-left{display:flex;align-items:center;gap:10px}
+.iph-section{
+  font-family:var(--ff-mono);font-size:10px;font-weight:700;
+  color:var(--em);letter-spacing:2px;text-transform:uppercase;
+  background:var(--em-glow3);border:1px solid rgba(16,185,129,.18);
+  padding:3px 10px;border-radius:3px;
+}
+.iph-title{font-family:var(--ff);font-size:18px;font-weight:800;letter-spacing:-.5px}
+.iph-title em{font-style:normal;color:var(--em)}
+.iph-meta{font-family:var(--ff-mono);font-size:10px;color:var(--txt3);display:flex;align-items:center;gap:14px}
+
+.intel-grid{
+  display:grid;
+  grid-template-columns:280px 1fr 248px;
+  gap:1px;background:rgba(255,255,255,.04);
+  border:1px solid var(--border);border-radius:12px;
+  overflow:hidden;margin-top:14px;
+}
+.i-panel{background:var(--obs);overflow:hidden}
+.i-col1{grid-column:1;grid-row:1/4}
+.i-col2t{grid-column:2;grid-row:1}
+.i-col2m{grid-column:2;grid-row:2}
+.i-col2b{grid-column:2;grid-row:3}
+.i-col3{grid-column:3;grid-row:1/4}
+.i-bottom{grid-column:1/4;border-top:1px solid var(--border)}
+
+.i-hdr{
+  background:var(--raised);padding:7px 12px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.i-hdr-title{
+  font-family:var(--ff-mono);font-size:10px;font-weight:700;
+  letter-spacing:1.5px;text-transform:uppercase;color:var(--txt);
+  display:flex;align-items:center;gap:7px;
+}
+.i-hdr-sub{font-family:var(--ff-mono);font-size:9px;color:var(--txt3);display:flex;align-items:center;gap:5px}
+.i-hdr-link{font-family:var(--ff-mono);font-size:10px;font-weight:600;color:var(--em);cursor:pointer}
+
+/* cat filters */
+.i-cat-filters{display:flex;flex-wrap:wrap;gap:4px;padding:10px 12px;border-bottom:1px solid var(--border)}
+.i-cat{
+  font-family:var(--ff-mono);font-size:10px;font-weight:700;
+  padding:3px 11px;border-radius:3px;cursor:pointer;
+  border:1px solid var(--border);background:transparent;color:var(--txt3);
+  transition:all var(--trans);
+}
+.i-cat:hover,.i-cat.on{border-color:rgba(16,185,129,.3);color:var(--em);background:var(--em-glow3)}
+
+/* report list */
+.i-report-list{display:flex;flex-direction:column;overflow-y:auto;max-height:600px}
+.i-report-item{
+  display:flex;gap:10px;padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.03);
+  cursor:pointer;transition:background var(--trans);
+}
+.i-report-item:hover{background:var(--surface)}
+.i-report-item.feat{background:rgba(16,185,129,.04);border-left:2px solid var(--em)}
+.i-rank{font-family:var(--ff-mono);font-size:10px;font-weight:600;color:var(--txt3);min-width:18px;padding-top:2px}
+.i-rank.em{color:var(--em)}
+.i-rbody{flex:1;min-width:0}
+.i-rtag{font-family:var(--ff-mono);font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px}
+.i-rtitle{font-size:12px;font-weight:700;color:var(--txt);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:3px}
+.i-rmeta{font-family:var(--ff-mono);font-size:9px;color:var(--txt3);display:flex;align-items:center;gap:7px}
+.i-rscore{font-family:var(--ff-mono);font-size:9px;font-weight:700;padding:1px 6px;border-radius:2px}
+.i-rs-hi{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);color:var(--em)}
+.i-rs-md{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.15);color:var(--gold)}
+.i-rs-lo{background:rgba(244,63,94,.08);border:1px solid rgba(244,63,94,.15);color:var(--red)}
+
+/* featured hero */
+.i-featured{padding:16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background var(--trans)}
+.i-featured:hover{background:var(--surface)}
+.i-fthumb{
+  width:100%;height:140px;border-radius:6px;
+  background:linear-gradient(135deg,rgba(16,185,129,.1),rgba(16,185,129,.03));
+  border:1px solid rgba(16,185,129,.12);margin-bottom:12px;overflow:hidden;
+}
+.i-fthumb svg{width:100%;height:100%;display:block}
+.i-ftag{font-family:var(--ff-mono);font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--em);margin-bottom:7px;display:flex;align-items:center;gap:5px}
+.i-fheadline{font-size:16px;font-weight:800;letter-spacing:-.4px;line-height:1.3;color:var(--txt);margin-bottom:7px}
+.i-fpreview{font-size:12px;color:var(--txt2);line-height:1.65;margin-bottom:10px}
+.i-fmeta{font-family:var(--ff-mono);font-size:10px;color:var(--txt3);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.i-fconv{display:flex;align-items:center;gap:5px;padding:3px 9px;border-radius:4px;background:var(--em-glow3);border:1px solid rgba(16,185,129,.18)}
+.i-fconv-val{font-family:var(--ff-mono);font-size:14px;font-weight:700;color:var(--em)}
+.i-fconv-lbl{font-size:10px;color:var(--txt2)}
+
+/* article grid */
+.i-article-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(255,255,255,.04)}
+.i-article{background:var(--obs);padding:13px;cursor:pointer;transition:background var(--trans)}
+.i-article:hover{background:var(--surface)}
+.i-athumb{width:100%;height:70px;border-radius:4px;background:linear-gradient(135deg,var(--surface),var(--raised));border:1px solid var(--border);margin-bottom:9px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.i-atag{font-family:var(--ff-mono);font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px}
+.i-atitle{font-size:12px;font-weight:700;color:var(--txt);line-height:1.4;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:5px}
+.i-ameta{font-family:var(--ff-mono);font-size:9px;color:var(--txt3);display:flex;gap:7px;align-items:center}
+
+/* live feed */
+.i-feed-item{display:flex;align-items:flex-start;gap:9px;padding:8px 13px;border-bottom:1px solid rgba(255,255,255,.03);cursor:pointer;transition:background var(--trans)}
+.i-feed-item:hover{background:var(--surface)}
+.i-ftime{font-family:var(--ff-mono);font-size:10px;font-weight:600;color:var(--txt3);min-width:48px;padding-top:2px}
+.i-farrow{color:var(--em);font-size:11px;padding-top:2px;flex-shrink:0;font-weight:700}
+.i-ftext{font-size:11px;font-weight:500;color:var(--txt2);line-height:1.45}
+.i-ftext b{color:var(--txt);font-weight:700}
+
+/* calendar */
+.i-cal-item{display:flex;align-items:flex-start;gap:8px;padding:7px 12px;border-bottom:1px solid rgba(255,255,255,.03)}
+.i-cdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.i-cdot.hi{background:var(--red);box-shadow:0 0 5px rgba(244,63,94,.5)}
+.i-cdot.md{background:var(--gold)}
+.i-cdot.lo{background:var(--txt3)}
+.i-ctime{font-family:var(--ff-mono);font-size:10px;font-weight:600;color:var(--txt3);min-width:46px}
+.i-cevent{font-size:11px;font-weight:500;color:var(--txt2);flex:1;line-height:1.35}
+.i-cimpact{font-family:var(--ff-mono);font-size:9px;font-weight:700;padding:1px 5px;border-radius:2px;white-space:nowrap}
+.i-imp-hi{background:rgba(244,63,94,.1);color:var(--red);border:1px solid rgba(244,63,94,.2)}
+.i-imp-md{background:rgba(245,158,11,.08);color:var(--gold);border:1px solid rgba(245,158,11,.15)}
+
+/* heatmap mini */
+.i-hm-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(255,255,255,.04)}
+.i-hm-cell{background:var(--obs);padding:9px 10px;border-bottom:1px solid rgba(255,255,255,.03)}
+.i-hm-pair{font-family:var(--ff-mono);font-size:10px;color:var(--txt);font-weight:700;margin-bottom:5px}
+.i-hm-row{display:flex;align-items:center;gap:5px;margin-bottom:3px}
+.i-hm-lbl{font-family:var(--ff-mono);font-size:9px;font-weight:600;color:var(--txt3);width:28px}
+.i-hm-track{flex:1;height:3px;background:rgba(255,255,255,.04);border-radius:2px;overflow:hidden}
+.i-hm-em{height:100%;background:var(--em);border-radius:2px}
+.i-hm-red{height:100%;background:var(--red);border-radius:2px}
+.i-hm-pct{font-family:var(--ff-mono);font-size:9px;font-weight:600;width:28px;text-align:right}
+
+/* zenith pick */
+.i-pick{margin:10px 12px;padding:12px;border-radius:6px;background:var(--em-glow3);border:1px solid rgba(16,185,129,.15)}
+.i-pick-lbl{font-family:var(--ff-mono);font-size:9px;font-weight:700;color:var(--em);letter-spacing:1.5px;margin-bottom:6px}
+.i-pick-title{font-size:13px;font-weight:700;color:var(--txt);line-height:1.4;margin-bottom:5px}
+.i-pick-body{font-size:11px;font-weight:500;color:var(--txt2);line-height:1.55}
+.i-pick-body b{color:var(--em);font-weight:700}
+.i-pick-cta{display:inline-flex;align-items:center;gap:5px;margin-top:8px;font-family:var(--ff-mono);font-size:10px;font-weight:700;color:var(--em);cursor:pointer;padding:4px 10px;border-radius:3px;border:1px solid rgba(16,185,129,.25);background:rgba(16,185,129,.06);transition:all var(--trans)}
+.i-pick-cta:hover{background:rgba(16,185,129,.12)}
+
+/* authors */
+.i-author-item{display:flex;align-items:center;gap:9px;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.03)}
+.i-author-av{width:28px;height:28px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--em),#059669);display:flex;align-items:center;justify-content:center;font-family:var(--ff-mono);font-size:10px;font-weight:700;color:#020617}
+.i-author-name{font-size:11px;font-weight:700;color:var(--txt)}
+.i-author-tag{font-family:var(--ff-mono);font-size:9px;color:var(--txt3)}
+.i-author-count{margin-left:auto;font-family:var(--ff-mono);font-size:9px;font-weight:700;color:var(--em);background:var(--em-glow3);border:1px solid rgba(16,185,129,.15);padding:2px 7px;border-radius:3px}
+
+/* correlation charts */
+.i-charts-row{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(255,255,255,.04)}
+.i-chart-panel{background:var(--obs);padding:11px 14px}
+.i-chart-label{font-family:var(--ff-mono);font-size:10px;font-weight:700;color:var(--txt2);margin-bottom:7px;letter-spacing:.5px}
+.i-chart-canvas{width:100%;height:80px;overflow:hidden}
+.i-chart-canvas svg{width:100%;height:100%;display:block}
+
+/* mobile responsive for intel tab */
+@media(max-width:1023px){
+  .intel-grid{grid-template-columns:1fr}
+  .i-col1,.i-col3,.i-col2t,.i-col2m,.i-col2b,.i-bottom{grid-column:1;grid-row:auto}
+  .i-article-grid,.i-hm-grid,.i-charts-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- Zenith backdrop dim -->
+<div class="agent-backdrop" id="agent-backdrop" onclick="toggleAgent()"></div>
+
+<!-- ══ TICKER TAPE ════════════════════════ -->
+<div class="ticker-tape">
+  <div class="ticker-label">
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+    LIVE
+  </div>
+  <div class="ticker-inner" id="ticker"></div>
+</div>
+
+<!-- ══ NAV ═══════════════════════════════ -->
+<nav class="nav">
+  <div class="nav-logo" onclick="go('home')">Zensch<em>IQ</em></div>
+  <div class="nav-links">
+    <div class="nav-a active" onclick="go('home')">Platform</div>
+    <div class="nav-a" onclick="goScroll('home','features')">Features</div>
+    <div class="nav-a" onclick="goScroll('home','bots')">Trading Bots</div>
+    <div class="nav-a" onclick="goScroll('home','pricing')">Pricing</div>
+    <div class="nav-a" onclick="go('app')">Live Demo</div>
+  </div>
+  <div class="nav-right">
+    <button class="btn-ghost" onclick="go('app')">Log In</button>
+    <button class="btn-cta" onclick="go('app')">Get Alpha Free →</button>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════
+   LANDING
+══════════════════════════════════════ -->
+<div class="pg on" id="pg-home">
+  <canvas id="hero-canvas"></canvas>
+
+  <!-- HERO -->
+  <div class="hero-wrap">
+    <div class="hero-inner">
+      <div class="hero-eyebrow"><div class="pulse-dot"></div> SOVEREIGN INTELLIGENCE ENGINE · LIVE</div>
+      <h1 class="hero-title">
+        <span class="hw1">Trade at the</span>
+        <span class="hw2">Sovereign Level.</span>
+        <span class="hw3">Not the retail one.</span>
+      </h1>
+      <p class="hero-sub">ZenschIQ processes <strong>466,984 rows</strong> of live market data to surface the highest-conviction signals — with AI bots that execute for you, automatically.</p>
+      <div class="hero-ctas">
+        <div class="btn-hero btn-hero-em" onclick="go('app')">Enter the Terminal →</div>
+        <div class="btn-hero btn-hero-ghost" onclick="goScroll('home','bots')">Browse Trading Bots</div>
+      </div>
+      <div class="hero-stats">
+        <div class="hstat"><div class="hstat-num" id="ctr">0</div><div class="hstat-label">Rows Analyzed</div></div>
+        <div class="hstat"><div class="hstat-num">98.7%</div><div class="hstat-label">Signal Accuracy</div></div>
+        <div class="hstat"><div class="hstat-num">14ms</div><div class="hstat-label">Latency</div></div>
+        <div class="hstat"><div class="hstat-num">$2.4M</div><div class="hstat-label">Bot Profits 30d</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SOCIAL PROOF -->
+  <div class="container">
+    <div class="sp-row">
+      <div class="sp-item">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--em)"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        Gemini 2.5 Flash
+      </div>
+      <div class="sp-item">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--em)"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Supabase Realtime
+      </div>
+      <div class="sp-item">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--em)"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        12,000+ traders
+      </div>
+      <div class="sp-item">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--em)"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/><circle cx="9" cy="14" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="14" r="1" fill="currentColor" stroke="none"/></svg>
+        47 bot strategies
+      </div>
+      <div class="sp-item">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--em)"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        466,984 signals/day
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- HOW IT WORKS -->
+  <section class="sec">
+    <div class="container">
+      <div class="sec-ey">How It Works</div>
+      <h2 class="sec-title">From raw data<br>to executed profit.</h2>
+      <p class="sec-sub">Three-step pipeline running 24/7 across 466K data points.</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-n">01 — INGEST</div>
+          <div class="step-ic">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1" fill="currentColor" stroke="none"/></svg>
+          </div>
+          <div class="step-t">Data Ingestion</div>
+          <div class="step-d">Python engine scrapes and normalizes Forex, Crypto, and Equity data in real-time via Supabase — updated every 14ms.</div>
+        </div>
+        <div class="step">
+          <div class="step-n">02 — SCORE</div>
+          <div class="step-ic">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+          </div>
+          <div class="step-t">Mensch AI Scoring</div>
+          <div class="step-d">Gemini 2.5 assigns every asset a conviction score (0–100) blending technical momentum, macro signals, and social sentiment.</div>
+        </div>
+        <div class="step">
+          <div class="step-n">03 — EXECUTE</div>
+          <div class="step-ic">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/><circle cx="9" cy="14" r="1.5" fill="currentColor" stroke="none"/><circle cx="15" cy="14" r="1.5" fill="currentColor" stroke="none"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
+          </div>
+          <div class="step-t">Bot Execution</div>
+          <div class="step-d">Trading bots consume conviction scores and execute positions automatically. You set the rules. The bot handles the rest.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- FEATURES BENTO -->
+  <section class="sec" id="features">
+    <div class="container">
+      <div class="sec-ey">Capabilities</div>
+      <h2 class="sec-title">Everything the market<br>doesn't want you to have.</h2>
+      <div class="bento">
+        <div class="bc bc-4"><div class="bc-tag">Intelligence</div>
+          <span class="bc-ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
+          <div class="bc-t">466K Row Feed</div><div class="bc-d">Server-side TanStack Table. Filters to conviction ≥90 in under 50ms. Never crashes.</div><div class="bc-pill">SUPABASE · REALTIME</div></div>
+        <div class="bc bc-4"><div class="bc-tag">AI Engine</div>
+          <span class="bc-ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span>
+          <div class="bc-t">Mensch Score™</div><div class="bc-d">Proprietary conviction index blending technical, macro, and sentiment into a single 0–100 signal.</div><div class="bc-pill">GEMINI 2.5</div></div>
+        <div class="bc bc-4"><div class="bc-tag">Automation</div>
+          <span class="bc-ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/><circle cx="9" cy="14" r="1.5" fill="currentColor" stroke="none"/><circle cx="15" cy="14" r="1.5" fill="currentColor" stroke="none"/><line x1="9" y1="17" x2="15" y2="17"/></svg></span>
+          <div class="bc-t">Trading Bots</div><div class="bc-d">47 backtested strategies. Deploy in one click. Powered by Mensch Score triggers.</div><div class="bc-pill">PYTHON · EXCHANGE API</div></div>
+        <div class="bc bc-6">
+          <div class="bc-tag">Live Signal Stream Preview</div>
+          <div class="bc-t">Intelligence Feed</div>
+          <div class="ipr-list" id="ipr-list"></div>
+        </div>
+        <div class="bc bc-6"><div class="bc-tag">AI Research Lab</div>
+          <span class="bc-ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6v8l3.5 6.5A2 2 0 0 1 16.76 21H7.24a2 2 0 0 1-1.74-2.5L9 11V3z"/><line x1="9" y1="3" x2="15" y2="3"/><circle cx="12" cy="15" r="1" fill="currentColor" stroke="none"/></svg></span>
+          <div class="bc-t">Zenith Agent</div><div class="bc-d">Context-aware AI that answers queries, filters 466K rows, runs what-if simulations, and renders charts on a live canvas.</div><div class="bc-pill">VERCEL AI SDK · STREAMING</div></div>
+        <div class="bc bc-4"><div class="bc-tag">Alerts</div>
+          <span class="bc-ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
+          <div class="bc-t">Smart Alerts</div><div class="bc-d">Conviction threshold triggers. Real-time in-app and email notifications.</div><div class="bc-pill">WEBSOCKETS</div></div>
+        <div class="bc bc-4"><div class="bc-tag">API</div>
+          <span class="bc-ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+          <div class="bc-t">API Keys</div><div class="bc-d">Pro users can pipe ZenschIQ conviction data into custom bots or spreadsheets.</div><div class="bc-pill">REST API · PRO</div></div>
+        <div class="bc bc-4"><div class="bc-tag">Visualization</div>
+          <span class="bc-ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><rect x="7" y="7" width="3" height="3" rx=".5" fill="currentColor" stroke="none"/><rect x="14" y="7" width="3" height="3" rx=".5" fill="currentColor" stroke="none" opacity=".5"/><rect x="7" y="14" width="3" height="3" rx=".5" fill="currentColor" stroke="none" opacity=".3"/><rect x="14" y="14" width="3" height="3" rx=".5" fill="currentColor" stroke="none" opacity=".9"/></svg></span>
+          <div class="bc-t">Sentiment Heatmap</div><div class="bc-d">Visual sector conviction map. Color intensity = signal strength. Updated every 30s.</div><div class="bc-pill">LIVE · SUPABASE</div></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- TRADING BOTS MARKETPLACE -->
+  <section class="sec" id="bots">
+    <div class="container">
+      <div class="sec-ey">Trading Bots Marketplace</div>
+      <h2 class="sec-title">Deploy sovereign alpha.<br>Automatically.</h2>
+      <p class="sec-sub">Backtested bot strategies powered by Mensch Score. Deploy in one click on any exchange.</p>
+      <div class="bots-grid" id="bots-grid"></div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- PRICING -->
+  <section class="sec" id="pricing">
+    <div class="container">
+      <div class="sec-ey">Pricing</div>
+      <h2 class="sec-title">One platform.<br>Sovereign access.</h2>
+      <div class="pricing-grid" id="pricing-grid"></div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <div>
+          <div class="footer-logo">Zensch<em>IQ</em></div>
+          <div class="footer-tagline">Sovereign Intelligence for the Modern Trader</div>
+        </div>
+        <nav class="footer-links">
+          <a href="#">Features</a><a href="#">Pricing</a><a href="#">Bots</a>
+          <a href="#">API Docs</a><a href="#">Blog</a><a href="#">Privacy</a><a href="#">Terms</a>
+        </nav>
+        <div class="footer-copy">© 2026 ZenschIQ / OLHMES<br>Not financial advice. AI intelligence only.</div>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- ══════════════════════════════════════
+   APP DASHBOARD
+══════════════════════════════════════ -->
+<div class="pg" id="pg-app">
+  <div class="app-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sb-logo">Z</div>
+
+      <!-- Command Center -->
+      <div class="sb-item on" onclick="aTab('dash')" title="Command Center">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+      </div>
+
+      <!-- Intelligence Feed -->
+      <div class="sb-item" onclick="aTab('feed')" title="Intelligence Feed">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
+          <line x1="8" y1="18" x2="21" y2="18"/>
+          <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+        </svg>
+      </div>
+
+      <!-- Asset Deep-Dive -->
+      <div class="sb-item" onclick="aTab('asset')" title="Asset Deep-Dive">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
+          <polyline points="16 7 22 7 22 13"/>
+        </svg>
+      </div>
+
+      <!-- Heatmap -->
+      <div class="sb-item" onclick="aTab('heatmap')" title="Heatmap">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <rect x="7" y="7" width="3" height="3" rx=".5" fill="currentColor" stroke="none"/>
+          <rect x="14" y="7" width="3" height="3" rx=".5" fill="currentColor" stroke="none" opacity=".5"/>
+          <rect x="7" y="14" width="3" height="3" rx=".5" fill="currentColor" stroke="none" opacity=".3"/>
+          <rect x="14" y="14" width="3" height="3" rx=".5" fill="currentColor" stroke="none" opacity=".8"/>
+        </svg>
+      </div>
+
+      <div class="sb-sep"></div>
+
+      <!-- Intelligence Reports -->
+      <div class="sb-item" onclick="aTab('intel')" title="Intelligence Reports">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+          <line x1="9" y1="7" x2="15" y2="7"/>
+          <line x1="9" y1="11" x2="15" y2="11"/>
+          <line x1="9" y1="15" x2="12" y2="15"/>
+        </svg>
+      </div>
+
+      <!-- Trading Bots -->
+      <div class="sb-item" onclick="aTab('bots-app')" title="Trading Bots">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="8" width="18" height="13" rx="2"/>
+          <path d="M9 8V6a3 3 0 0 1 6 0v2"/>
+          <circle cx="9" cy="14" r="1.5" fill="currentColor" stroke="none"/>
+          <circle cx="15" cy="14" r="1.5" fill="currentColor" stroke="none"/>
+          <line x1="9" y1="17" x2="15" y2="17"/>
+        </svg>
+      </div>
+
+      <!-- AI Research Lab -->
+      <div class="sb-item" onclick="aTab('lab')" title="AI Research Lab">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 3h6v8l3.5 6.5A2 2 0 0 1 16.76 21H7.24a2 2 0 0 1-1.74-2.5L9 11V3z"/>
+          <line x1="9" y1="3" x2="15" y2="3"/>
+          <circle cx="12" cy="15" r="1" fill="currentColor" stroke="none"/>
+        </svg>
+      </div>
+
+      <!-- Alerts -->
+      <div class="sb-item" onclick="aTab('alerts')" title="Alerts">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        <div class="sb-badge"></div>
+      </div>
+
+      <div class="sb-sep"></div>
+
+      <div class="sb-bot">
+        <!-- Back -->
+        <div class="sb-item" onclick="go('home')" title="Back to Site">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </div>
+        <!-- Settings -->
+        <div class="sb-item" title="Settings">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="app-main">
+
+      <!-- COMMAND CENTER -->
+      <div class="app-tab on" id="at-dash">
+        <div class="app-hdr">
+          <div>
+            <div class="app-title">Command <span>Center</span></div>
+            <div class="app-meta"><span class="dot-live"></span> Live · <span id="clk">--:--:-- GMT</span> · 466,984 signals active</div>
+          </div>
+          <div style="display:flex;gap:7px">
+            <div class="filt-btn on"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="display:inline-block;vertical-align:middle;margin-right:3px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Live</div>
+            <div class="filt-btn">Export</div>
+          </div>
+        </div>
+        <div class="stats-row">
+          <div class="stat-card"><div class="sc-lbl">Top Conviction</div><div class="sc-val up">BTC/USD</div><div class="sc-sub">Mensch Score: <span class="up" style="font-family:var(--ff-mono)">94</span></div></div>
+          <div class="stat-card"><div class="sc-lbl">Market Sentiment</div><div class="sc-val up">Bullish</div><div class="sc-sub">67% of assets trending ↑</div></div>
+          <div class="stat-card"><div class="sc-lbl">Top Gainer</div><div class="sc-val up">NVDA</div><div class="sc-sub"><span class="up" style="font-family:var(--ff-mono)">+4.12%</span> · Tech Equity</div></div>
+        </div>
+        <div class="g2">
+          <div class="intel-wrap" style="margin-bottom:0">
+            <div class="intel-toolbar">
+              <div class="scard-title" style="margin:0"><span class="dot-live"></span>&nbsp;Market Movers</div>
+              <div class="filt-btn" style="margin-left:auto" onclick="aTab('feed')">View All →</div>
+            </div>
+            <table class="intel-table" id="dash-movers"></table>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div class="scard">
+              <div class="scard-title">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><rect x="7" y="7" width="3" height="3" rx=".5" fill="currentColor" stroke="none"/><rect x="14" y="14" width="3" height="3" rx=".5" fill="currentColor" stroke="none"/></svg>
+                Heatmap <span style="margin-left:auto;cursor:pointer;color:var(--em);font-size:9px" onclick="aTab('heatmap')">Full →</span></div>
+              <div class="hm-cells" id="dash-hm"></div>
+            </div>
+            <div class="scard" style="flex:1">
+              <div class="scard-title"><span class="dot-live"></span>&nbsp;Live News</div>
+              <div id="dash-news"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INTELLIGENCE FEED -->
+      <div class="app-tab" id="at-feed">
+        <div class="app-hdr">
+          <div><div class="app-title">Intelligence <span>Feed</span></div><div class="app-meta">466,984 rows · Server-side · Updated <span style="color:var(--em)">2s ago</span></div></div>
+        </div>
+        <div class="intel-wrap">
+          <div class="intel-toolbar">
+            <input class="search-box" placeholder="⌘  Search pair, sector…"/>
+            <div class="filt-btn on">All</div>
+            <div class="filt-btn">Forex</div>
+            <div class="filt-btn">Crypto</div>
+            <div class="filt-btn">Equity</div>
+            <div class="filt-btn">Score ≥ 90</div>
+            <div class="filt-btn" style="margin-left:auto">⬇ Export</div>
+          </div>
+          <table class="intel-table">
+            <thead><tr><th>#</th><th>Asset ↕</th><th>Cat.</th><th>24h</th><th>Mensch ↕</th><th>Level</th><th>Change</th><th></th></tr></thead>
+            <tbody id="feed-rows"></tbody>
+          </table>
+          <div class="pager">
+            <span>Showing 1–20 of <b style="color:var(--em)">466,984</b></span>
+            <div class="pg-btns">
+              <div class="pg-btn on">1</div><div class="pg-btn">2</div><div class="pg-btn">3</div><div class="pg-btn">…</div><div class="pg-btn">›</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ASSET DEEP-DIVE -->
+      <div class="app-tab" id="at-asset">
+        <div class="app-hdr">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:42px;height:42px;background:var(--em-glow3);border:1px solid rgba(16,185,129,.18);border-radius:11px;display:flex;align-items:center;justify-content:center;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--em)"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div>
+              <div class="app-title">Bitcoin <span style="font-size:13px;font-weight:500;color:var(--txt2)">BTC/USD</span></div>
+              <div class="app-meta">Crypto · Binance · <span class="up">Score 94</span></div>
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-family:var(--ff-mono);font-size:26px;font-weight:600;letter-spacing:-1px" class="up">$67,241</div>
+            <div class="up" style="font-family:var(--ff-mono);font-size:11px">▲ +2.83% today</div>
+          </div>
+        </div>
+        <div class="pillar-grid">
+          <div class="pillar"><div class="pillar-val">88</div><div class="pillar-lbl">Technical</div></div>
+          <div class="pillar"><div class="pillar-val">91</div><div class="pillar-lbl">Macro</div></div>
+          <div class="pillar featured"><div class="pillar-val">94</div><div class="pillar-lbl">Mensch Score</div></div>
+        </div>
+        <div class="g2" style="margin-bottom:10px">
+          <div class="scard">
+            <div class="scard-title">
+              Price Chart · 30 Days
+              <div style="display:flex;gap:4px;margin-left:auto">
+                <div class="filt-btn on" style="font-size:9px;padding:3px 8px">1D</div>
+                <div class="filt-btn" style="font-size:9px;padding:3px 8px">1W</div>
+                <div class="filt-btn" style="font-size:9px;padding:3px 8px">1M</div>
+              </div>
+            </div>
+            <div style="height:150px">
+              <svg viewBox="0 0 500 150" preserveAspectRatio="none" style="width:100%;height:100%">
+                <defs>
+                  <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#10b981" stop-opacity=".22"/>
+                    <stop offset="100%" stop-color="#10b981" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <path d="M0,125 C35,115 65,95 105,78 C145,62 165,95 205,82 C245,68 275,48 315,40 C355,32 385,54 425,42 C455,33 475,22 500,14 L500,150 L0,150Z" fill="url(#cg)"/>
+                <path d="M0,125 C35,115 65,95 105,78 C145,62 165,95 205,82 C245,68 275,48 315,40 C355,32 385,54 425,42 C455,33 475,22 500,14" fill="none" stroke="#10b981" stroke-width="1.8"/>
+                <circle cx="500" cy="14" r="3.5" fill="#10b981" style="filter:drop-shadow(0 0 5px #10b981)"/>
+              </svg>
+            </div>
+          </div>
+          <div class="scard" style="background:linear-gradient(145deg,rgba(15,23,42,.9),rgba(4,18,12,.8));border-color:rgba(16,185,129,.18)">
+            <div class="scard-title">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+              Zenith Mensch Move
+              <span style="margin-left:auto;background:var(--em-glow3);border:1px solid rgba(16,185,129,.18);color:var(--em);font-family:var(--ff-mono);font-size:8px;padding:2px 7px;border-radius:3px;letter-spacing:.5px">AI VERIFIED</span>
+            </div>
+            <p style="font-size:11px;color:var(--txt2);line-height:1.75;margin-bottom:10px">
+              BTC shows a <strong style="color:var(--em)">textbook breakout</strong> above $65K macro resistance. Mensch Score <strong style="color:var(--em)">94/100</strong> reflects convergence: RSI 68, MACD cross confirmed, Fed pause narrative, and <strong style="color:var(--em)">record institutional longs.</strong><br><br>
+              <span style="color:var(--txt)">Play:</span> Long above $66,800 · Target $74,200 · Invalidation $63,400.
+            </p>
+            <div style="padding-top:10px;border-top:1px solid var(--border)">
+              <div style="font-family:var(--ff-mono);font-size:9px;color:var(--txt3);margin-bottom:5px">LIVE SENTIMENT</div>
+              <div class="sent-dial" id="sent-dial">
+                <div class="dial-thumb" id="dial-thumb" style="left:79%"></div>
+              </div>
+              <div class="dial-labels"><span>Bearish</span><span style="color:var(--em)">82% Bullish</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="scard">
+          <div class="scard-title">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6v8l3.5 6.5A2 2 0 0 1 16.76 21H7.24a2 2 0 0 1-1.74-2.5L9 11V3z"/><line x1="9" y1="3" x2="15" y2="3"/></svg>
+            What-If Simulator <span style="color:var(--em);font-size:9px;margin-left:5px">BETA</span>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <span style="font-size:11px;color:var(--txt2)">Volatility change:</span>
+            <div class="filt-btn on" onclick="sim(this,5)">+5%</div>
+            <div class="filt-btn" onclick="sim(this,10)">+10%</div>
+            <div class="filt-btn" onclick="sim(this,20)">+20%</div>
+            <div class="filt-btn" onclick="sim(this,-10)">−10%</div>
+            <div style="margin-left:auto;display:flex;align-items:baseline;gap:6px">
+              <span style="font-family:var(--ff-mono);font-size:10px;color:var(--txt3)">Projected:</span>
+              <span id="sim-v" style="font-family:var(--ff-mono);font-size:22px;font-weight:600;color:var(--em)">94</span>
+              <span id="sim-n" style="font-size:11px;color:var(--txt2)">Baseline</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HEATMAP FULL -->
+      <div class="app-tab" id="at-heatmap">
+        <div class="app-hdr"><div><div class="app-title">Sentiment <span>Heatmap</span></div><div class="app-meta">Live conviction by asset · Updated 30s</div></div></div>
+        <div class="hm-full-grid" id="hm-full"></div>
+      </div>
+
+      <!-- BOTS IN APP -->
+      <div class="app-tab" id="at-bots-app">
+        <div class="app-hdr"><div><div class="app-title">Trading <span>Bots</span></div><div class="app-meta">47 strategies · Deploy in one click</div></div></div>
+        <div class="bots-app-grid" id="bots-app"></div>
+      </div>
+
+      <!-- AI LAB -->
+      <div class="app-tab" id="at-lab">
+        <div class="app-hdr">
+          <div>
+            <div class="app-title">AI Research <span>Lab</span></div>
+            <div class="app-meta">Full-database queries · Gemini 2.5 Flash · <span class="zenith-status"><span class="zenith-dot"></span>Zenith online</span></div>
+          </div>
+          <span style="background:var(--em-glow3);border:1px solid rgba(16,185,129,.2);color:var(--em);font-family:var(--ff-mono);font-size:9px;padding:4px 10px;border-radius:4px;letter-spacing:.5px">PRO</span>
+        </div>
+        <div class="lab-layout">
+          <!-- CHAT -->
+          <div class="lab-chat">
+            <div class="lab-hdr">
+              <div style="width:26px;height:26px;background:linear-gradient(135deg,var(--em),#059669);border-radius:7px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 10px var(--em-glow)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/><circle cx="9" cy="14" r="1.5" fill="white" stroke="none"/><circle cx="15" cy="14" r="1.5" fill="white" stroke="none"/><line x1="9" y1="17" x2="15" y2="17" stroke="white"/></svg>
+              </div>
+              <div class="lab-hdr-title">Zenith</div>
+              <div class="zenith-status"><span class="zenith-dot"></span>Listening to data stream</div>
+              <div class="lab-chips">
+                <div class="lab-chip" onclick="labMsg('Top 10 Forex by conviction')">Top Forex</div>
+                <div class="lab-chip" onclick="labMsg('Daily market briefing')">Daily Brief</div>
+                <div class="lab-chip" onclick="labMsg('Tech stocks with score above 90')">Tech ≥90</div>
+              </div>
+            </div>
+            <div class="lab-msgs" id="lab-msgs">
+              <div class="lm-ai">
+                <div class="lm-av av-ai"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/><circle cx="9" cy="14" r="1.5" fill="white" stroke="none"/><circle cx="15" cy="14" r="1.5" fill="white" stroke="none"/><line x1="9" y1="17" x2="15" y2="17"/></svg></div>
+                <div class="lm-bubble lm-bubble-ai">Welcome to the <strong>Zenith Research Lab</strong>. I have live access to your 466,984-row database. Ask me anything — I can filter, compare, summarize, and render charts on the canvas to your right.<br><br>Try: <strong>"Compare AI stocks last week vs today."</strong></div>
+              </div>
+            </div>
+            <div class="lab-input-area">
+              <textarea class="lab-input" id="lab-in" placeholder="Query the intelligence database…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendLab()}"></textarea>
+              <button class="lab-send" onclick="sendLab()">↑</button>
+            </div>
+            <div style="font-family:var(--ff-mono);font-size:8px;color:var(--txt3);text-align:center;padding:.3rem 1rem .5rem">Not financial advice. AI intelligence only.</div>
+          </div>
+
+          <!-- CANVAS -->
+          <div class="lab-canvas-wrap">
+            <div class="lab-hdr">
+              <div class="lab-hdr-title">AI Canvas</div>
+              <span style="font-family:var(--ff-mono);font-size:9px;color:var(--txt3)">Reports & charts render here</span>
+            </div>
+            <div class="canvas-body" id="canvas-body">
+              <!-- Ghost placeholders -->
+              <div class="canvas-ghosts" id="canvas-ghosts">
+                <div class="ghost-block" style="height:90px">
+                  <div class="ghost-bars">
+                    <div class="ghost-bar" style="height:30px"></div><div class="ghost-bar" style="height:45px"></div><div class="ghost-bar" style="height:20px"></div><div class="ghost-bar" style="height:60px"></div><div class="ghost-bar" style="height:35px"></div><div class="ghost-bar" style="height:50px"></div><div class="ghost-bar" style="height:25px"></div><div class="ghost-bar" style="height:40px"></div>
+                  </div>
+                  <div class="ghost-label">CHART RENDERS HERE</div>
+                </div>
+                <div class="ghost-block" style="height:100px">
+                  <div class="ghost-table" style="width:100%">
+                    <div class="ghost-row"><div class="ghost-cell" style="flex:1;height:10px"></div><div class="ghost-cell" style="width:40px;height:10px"></div><div class="ghost-cell" style="width:55px;height:10px"></div></div>
+                    <div class="ghost-row"><div class="ghost-cell" style="flex:1;height:8px"></div><div class="ghost-cell" style="width:40px;height:8px"></div><div class="ghost-cell" style="width:55px;height:8px"></div></div>
+                    <div class="ghost-row"><div class="ghost-cell" style="flex:1;height:8px"></div><div class="ghost-cell" style="width:40px;height:8px"></div><div class="ghost-cell" style="width:55px;height:8px"></div></div>
+                    <div class="ghost-row"><div class="ghost-cell" style="flex:1;height:8px"></div><div class="ghost-cell" style="width:40px;height:8px"></div><div class="ghost-cell" style="width:55px;height:8px"></div></div>
+                  </div>
+                  <div class="ghost-label">TABLE RENDERS HERE</div>
+                </div>
+                <div class="ghost-block" style="height:60px">
+                  <div style="width:100%"><div class="ghost-line"></div><div class="ghost-line" style="opacity:.6"></div><div class="ghost-line" style="opacity:.3"></div></div>
+                  <div class="ghost-label">REPORT RENDERS HERE</div>
+                </div>
+              </div>
+              <div class="canvas-report" id="canvas-report"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ALERTS -->
+      <div class="app-tab" id="at-alerts">
+        <div class="app-hdr">
+          <div><div class="app-title">Alert <span>Manager</span></div><div class="app-meta">3 active · 12 fired today</div></div>
+          <button class="btn-cta" style="font-size:11px;padding:7px 16px">+ New Alert</button>
+        </div>
+        <div class="scard" id="alerts-card"></div>
+      </div>
+
+      <!-- ─ INTELLIGENCE REPORTS ─ -->
+      <div class="app-tab" id="at-intel">
+        <div class="intel-page-hdr">
+          <div class="iph-left">
+            <div class="iph-section">Intel Reports</div>
+            <div class="iph-title">ZENSCHIQ <em>INTEL</em></div>
+          </div>
+          <div class="iph-meta">
+            <div class="live-pill"><span class="dot-live"></span>&nbsp;LIVE</div>
+            <span>2,847 reports</span>
+            <span>Gemini 2.5 · AI-Generated</span>
+          </div>
+        </div>
+
+        <div class="intel-grid">
+
+          <!-- COL 1: REPORT INDEX -->
+          <div class="i-panel i-col1">
+            <div class="i-hdr">
+              <div class="i-hdr-title">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                Report Index
+              </div>
+              <div class="i-hdr-sub"><span class="dot-live"></span>2,847 total</div>
+            </div>
+            <div class="i-cat-filters">
+              <div class="i-cat on">All</div>
+              <div class="i-cat">Forex</div>
+              <div class="i-cat">Crypto</div>
+              <div class="i-cat">Equity</div>
+              <div class="i-cat">Macro</div>
+            </div>
+            <div class="i-report-list" id="i-report-list"></div>
+          </div>
+
+          <!-- COL 2 TOP: FEATURED -->
+          <div class="i-panel i-col2t">
+            <div class="i-hdr">
+              <div class="i-hdr-title">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                Featured Report
+              </div>
+              <div class="i-hdr-sub"><span class="dot-live"></span>AI-Generated&nbsp;<span class="i-hdr-link">View All →</span></div>
+            </div>
+            <div class="i-featured">
+              <div class="i-fthumb">
+                <svg viewBox="0 0 460 140" preserveAspectRatio="none">
+                  <defs><linearGradient id="itg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#10b981" stop-opacity=".22"/><stop offset="100%" stop-color="#10b981" stop-opacity="0"/></linearGradient></defs>
+                  <line x1="0" y1="35" x2="460" y2="35" stroke="rgba(255,255,255,.04)" stroke-width="1"/>
+                  <line x1="0" y1="70" x2="460" y2="70" stroke="rgba(255,255,255,.04)" stroke-width="1"/>
+                  <line x1="0" y1="105" x2="460" y2="105" stroke="rgba(255,255,255,.04)" stroke-width="1"/>
+                  <path d="M0,120 C35,110 65,92 105,75 C145,58 162,92 202,80 C242,66 272,44 312,36 C352,28 382,50 422,38 C445,30 455,22 460,14 L460,140 L0,140Z" fill="url(#itg)"/>
+                  <path d="M0,120 C35,110 65,92 105,75 C145,58 162,92 202,80 C242,66 272,44 312,36 C352,28 382,50 422,38 C445,30 455,22 460,14" fill="none" stroke="#10b981" stroke-width="2"/>
+                  <circle cx="460" cy="14" r="4" fill="#10b981" style="filter:drop-shadow(0 0 5px #10b981)"/>
+                  <rect x="12" y="10" width="46" height="18" rx="3" fill="rgba(16,185,129,.15)" stroke="rgba(16,185,129,.3)" stroke-width="1"/>
+                  <text x="35" y="23" text-anchor="middle" fill="#10b981" font-family="Roboto Mono" font-size="10" font-weight="700">94</text>
+                  <text x="65" y="23" fill="rgba(16,185,129,.7)" font-family="Roboto Mono" font-size="8">HIGH CONVICTION</text>
+                </svg>
+              </div>
+              <div class="i-ftag">
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                FOREX · BREAKING
+              </div>
+              <div class="i-fheadline">USD/JPY BREAKOUT: Why the BoJ Decision Triggered the Highest-Conviction Signal of Q2 2026</div>
+              <div class="i-fpreview">The Bank of Japan's unanimous hold at 0.1% created a textbook carry trade setup. ZenschIQ's Mensch Score spiked to 94 — the highest level for a Forex pair in 18 months. Our AI engine analyzed 14,200 institutional positioning data points to surface this signal before the crowd moved.</div>
+              <div class="i-fmeta">
+                <div class="i-fconv">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+                  <div class="i-fconv-val">94</div>
+                  <div class="i-fconv-lbl">Mensch Score · High Conviction</div>
+                </div>
+                <span>14:12 GMT · 6 min read</span>
+                <span>Gemini 2.5 · Verified</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- COL 3: RIGHT SIDEBAR -->
+          <div class="i-panel i-col3">
+
+            <!-- Economic Calendar -->
+            <div class="i-hdr">
+              <div class="i-hdr-title">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                Economic Calendar
+              </div>
+              <div class="i-hdr-sub">GMT · Today</div>
+            </div>
+            <div id="i-cal-list"></div>
+
+            <!-- Sentiment Heatmap -->
+            <div class="i-hdr" style="margin-top:1px">
+              <div class="i-hdr-title">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><rect x="7" y="7" width="3" height="3" rx=".5" fill="currentColor" stroke="none"/><rect x="14" y="14" width="3" height="3" rx=".5" fill="currentColor" stroke="none"/></svg>
+                Sentiment
+              </div>
+              <span class="i-hdr-link" onclick="aTab('heatmap')">Full →</span>
+            </div>
+            <div class="i-hm-grid" id="i-hm-grid"></div>
+
+            <!-- Zenith Pick -->
+            <div class="i-hdr" style="margin-top:1px">
+              <div class="i-hdr-title">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                Zenith Pick
+              </div>
+            </div>
+            <div class="i-pick">
+              <div class="i-pick-lbl">AI CONVICTION SIGNAL</div>
+              <div class="i-pick-title">USD/JPY holds Mensch Score 88 — breakout confirmed above 151.00.</div>
+              <div class="i-pick-body">RSI 68, MACD bullish cross. Sentiment: <b>89% net long.</b> Target 153.40.</div>
+              <div class="i-pick-cta" onclick="aTab('asset')">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+                Open Deep-Dive
+              </div>
+            </div>
+
+            <!-- AI Analysts -->
+            <div class="i-hdr" style="margin-top:1px">
+              <div class="i-hdr-title">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                AI Analysts
+              </div>
+            </div>
+            <div class="i-author-item"><div class="i-author-av">ZA</div><div><div class="i-author-name">Zenith Alpha</div><div class="i-author-tag">Forex · Macro</div></div><div class="i-author-count">142</div></div>
+            <div class="i-author-item"><div class="i-author-av" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8)">ZC</div><div><div class="i-author-name">Zenith Crypto</div><div class="i-author-tag">BTC · ETH · SOL</div></div><div class="i-author-count">98</div></div>
+            <div class="i-author-item"><div class="i-author-av" style="background:linear-gradient(135deg,#c084fc,#7c3aed)">ZE</div><div><div class="i-author-name">Zenith Equity</div><div class="i-author-tag">Tech · Growth</div></div><div class="i-author-count">74</div></div>
+            <div class="i-author-item"><div class="i-author-av" style="background:linear-gradient(135deg,#f59e0b,#d97706)">ZM</div><div><div class="i-author-name">Zenith Macro</div><div class="i-author-tag">Fed · CPI · Rates</div></div><div class="i-author-count">61</div></div>
+
+          </div>
+
+          <!-- COL 2 MID: ARTICLE GRID -->
+          <div class="i-panel i-col2m">
+            <div class="i-hdr">
+              <div class="i-hdr-title">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><rect x="7" y="7" width="3" height="8" rx=".5"/><rect x="14" y="7" width="3" height="5" rx=".5"/></svg>
+                Latest Reports
+              </div>
+              <span class="i-hdr-link">View All 2,847 →</span>
+            </div>
+            <div class="i-article-grid" id="i-article-grid"></div>
+          </div>
+
+          <!-- COL 2 BOT: LIVE FEED -->
+          <div class="i-panel i-col2b">
+            <div class="i-hdr">
+              <div class="i-hdr-title"><span class="dot-live"></span>&nbsp;Live Intelligence Feed</div>
+              <div class="i-hdr-sub">Auto-updating</div>
+            </div>
+            <div id="i-live-feed"></div>
+          </div>
+
+          <!-- BOTTOM: CHARTS -->
+          <div class="i-panel i-bottom">
+            <div class="i-hdr">
+              <div class="i-hdr-title">Multi-Asset Correlations</div>
+              <span style="font-size:11px;color:var(--txt3);margin-left:12px">Macro factors driving Forex and crypto conviction trends</span>
+            </div>
+            <div class="i-charts-row">
+              <div class="i-chart-panel"><div class="i-chart-label">USD STRENGTH (DXY) vs BITCOIN</div><div class="i-chart-canvas" id="i-chart1"></div></div>
+              <div class="i-chart-panel"><div class="i-chart-label">US 10Y BOND YIELD vs GOLD</div><div class="i-chart-canvas" id="i-chart2"></div></div>
+            </div>
+          </div>
+
+        </div><!-- /intel-grid -->
+      </div><!-- /at-intel -->
+
+    </main>
+  </div>
+
+  <!-- MOBILE BOTTOM NAV — 1024px breakpoint -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <div class="bnav-item on" id="bn-dash" onclick="aTab('dash');bnav(this)">
+      <div class="bnav-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+      </div><span>Hub</span>
+    </div>
+    <div class="bnav-item" id="bn-feed" onclick="aTab('feed');bnav(this)">
+      <div class="bnav-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
+          <line x1="8" y1="18" x2="21" y2="18"/>
+          <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+        </svg>
+      </div><span>Feed</span>
+    </div>
+    <div class="bnav-item" id="bn-intel" onclick="aTab('intel');bnav(this)">
+      <div class="bnav-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+          <line x1="9" y1="7" x2="15" y2="7"/>
+          <line x1="9" y1="11" x2="15" y2="11"/>
+        </svg>
+      </div><span>Intel</span>
+    </div>
+    <div class="bnav-item" id="bn-bots-app" onclick="aTab('bots-app');bnav(this)">
+      <div class="bnav-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="8" width="18" height="13" rx="2"/>
+          <path d="M9 8V6a3 3 0 0 1 6 0v2"/>
+          <circle cx="9" cy="14" r="1.5" fill="currentColor" stroke="none"/>
+          <circle cx="15" cy="14" r="1.5" fill="currentColor" stroke="none"/>
+          <line x1="9" y1="17" x2="15" y2="17"/>
+        </svg>
+      </div><span>Bots</span>
+    </div>
+    <div class="bnav-item" id="bn-lab" onclick="aTab('lab');bnav(this)">
+      <div class="bnav-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 3h6v8l3.5 6.5A2 2 0 0 1 16.76 21H7.24a2 2 0 0 1-1.74-2.5L9 11V3z"/>
+          <line x1="9" y1="3" x2="15" y2="3"/>
+        </svg>
+      </div><span>Lab</span>
+    </div>
+    <div class="bnav-item" id="bn-alerts" onclick="aTab('alerts');bnav(this)" style="position:relative">
+      <div class="bnav-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+      </div>
+      <div class="bnav-badge"></div>
+      <span>Alerts</span>
+    </div>
+  </nav>
+</div>
+
+<!-- ══ ZENITH AGENT BUBBLE ════════════════ -->
+<div class="agent-wrap">
+  <div class="agent-panel" id="agent-panel">
+    <div class="agent-hdr">
+      <div class="agent-av">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/><circle cx="9" cy="14" r="1.5" fill="currentColor" stroke="none"/><circle cx="15" cy="14" r="1.5" fill="currentColor" stroke="none"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
+      </div>
+      <div>
+        <div class="agent-name">Zenith Agent</div>
+        <div class="agent-online"><span></span>Live · Context aware</div>
+      </div>
+      <button onclick="toggleAgent()" style="margin-left:auto;background:none;border:none;color:var(--txt3);cursor:pointer;font-size:17px;line-height:1;transition:color var(--trans)" onmouseover="this.style.color='var(--txt)'" onmouseout="this.style.color='var(--txt3)'">×</button>
+    </div>
+    <div class="agent-msgs" id="agent-msgs">
+      <div class="amsg amsg-ai">Hi! I'm <strong>Zenith</strong>. I have live access to your 466K signal database. What do you need?</div>
+    </div>
+    <div class="agent-input-row">
+      <input class="agent-in" id="agent-in" placeholder="Ask Zenith…" onkeydown="if(event.key==='Enter')sendAgent()"/>
+      <button class="agent-send" onclick="sendAgent()">↑</button>
+    </div>
+    <div class="agent-disc">Not financial advice. Intelligence only.</div>
+  </div>
+  <button class="agent-orb" onclick="toggleAgent()">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/><circle cx="9" cy="14" r="1.5" fill="currentColor" stroke="none"/><circle cx="15" cy="14" r="1.5" fill="currentColor" stroke="none"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
+  </button>
+</div>
+
+<!-- ═══════════════════════════════════════
+   SCRIPTS
+═══════════════════════════════════════ -->
+<script>
+/* ── ANIMATED MESH CANVAS ──────────────────── */
+(function(){
+  const cv=document.getElementById('hero-canvas');
+  if(!cv)return;
+  const ctx=cv.getContext('2d');
+  let W,H,pts=[];
+  function resize(){W=cv.width=cv.offsetWidth;H=cv.height=cv.offsetHeight||innerHeight}
+  function init(){
+    pts=[];
+    const cols=Math.ceil(W/88)+1,rows=Math.ceil(H/88)+1;
+    for(let r=0;r<rows;r++)for(let c=0;c<cols;c++)
+      pts.push({bx:c*88,by:r*88,ox:0,oy:0,vx:(Math.random()-.5)*.35,vy:(Math.random()-.5)*.35});
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    const cols=Math.ceil(W/88)+1;
+    pts.forEach((p,i)=>{
+      p.ox+=p.vx;p.oy+=p.vy;
+      if(Math.abs(p.ox)>22)p.vx*=-1;
+      if(Math.abs(p.oy)>22)p.vy*=-1;
+      const x=p.bx+p.ox,y=p.by+p.oy;
+      if((i+1)%cols!==0&&i+1<pts.length){
+        const q=pts[i+1];
+        ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(q.bx+q.ox,q.by+q.oy);
+        ctx.strokeStyle='rgba(16,185,129,.055)';ctx.lineWidth=1;ctx.stroke();
+      }
+      if(i+cols<pts.length){
+        const q=pts[i+cols];
+        ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(q.bx+q.ox,q.by+q.oy);
+        ctx.strokeStyle='rgba(16,185,129,.055)';ctx.lineWidth=1;ctx.stroke();
+      }
+      ctx.beginPath();ctx.arc(x,y,1.4,0,Math.PI*2);
+      ctx.fillStyle='rgba(16,185,129,.22)';ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  resize();init();draw();
+  window.addEventListener('resize',()=>{resize();init()});
+})();
+
+/* ── TICKER ─────────────────────────────── */
+const TDATA=[
+  {p:'BTC/USD',v:'67,241',c:'+2.83%',s:94,u:true},
+  {p:'USD/JPY',v:'151.84',c:'-0.38%',s:88,u:false},
+  {p:'EUR/USD',v:'1.0832',c:'+0.12%',s:73,u:true},
+  {p:'NVDA',v:'$874.20',c:'+4.12%',s:91,u:true},
+  {p:'SOL/USD',v:'$178.40',c:'+3.42%',s:88,u:true},
+  {p:'GBP/USD',v:'1.2644',c:'+0.31%',s:79,u:true},
+  {p:'XAU/USD',v:'$2,312',c:'-0.44%',s:71,u:false},
+  {p:'AUD/USD',v:'0.6523',c:'-0.09%',s:66,u:false},
+];
+(()=>{
+  const arr=[...TDATA,...TDATA];
+  document.getElementById('ticker').innerHTML=arr.map(t=>`
+    <div class="tick">
+      <span class="tick-pair">${t.p}</span>
+      <span class="tick-price">${t.v}</span>
+      <span class="${t.u?'tick-up':'tick-dn'}">${t.c}</span>
+      <span class="tick-score">${t.s}</span>
+    </div>`).join('');
+})();
+
+/* ── CLOCK ─────────────────────────────── */
+setInterval(()=>{
+  const n=new Date(),pad=v=>String(v).padStart(2,'0');
+  const t=`${pad(n.getUTCHours())}:${pad(n.getUTCMinutes())}:${pad(n.getUTCSeconds())} GMT`;
+  const el=document.getElementById('clk');if(el)el.textContent=t;
+},1000);
+
+/* ── COUNTER ────────────────────────────── */
+(()=>{
+  const el=document.getElementById('ctr');if(!el)return;
+  let v=0;const T=466984,st=Math.ceil(T/80);
+  const tid=setInterval(()=>{v=Math.min(v+st,T);el.textContent=v.toLocaleString();if(v>=T)clearInterval(tid)},14);
+})();
+
+/* ── SPARKS ─────────────────────────────── */
+function spark(up,w=72,h=26){
+  let pts=[],v=up?h*.8:h*.2;
+  for(let i=0;i<=7;i++){
+    const x=(i/7)*w;
+    v=Math.max(2,Math.min(h-2,v+(Math.random()-.46)*(h/3)*(up?-1:1)));
+    pts.push(`${x.toFixed(1)},${v.toFixed(1)}`);
+  }
+  return `<svg width="${w}" height="${h}"><polyline points="${pts.join(' ')}" fill="none" stroke="${up?'#10b981':'#f43f5e'}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+
+/* ── FEED DATA ──────────────────────────── */
+const FEED=[
+  {id:1,p:'BTC/USD',cat:'Crypto',s:94,c:'+2.83',u:true},
+  {id:2,p:'NVDA',cat:'Equity',s:91,c:'+4.12',u:true},
+  {id:3,p:'SOL/USD',cat:'Crypto',s:88,c:'+3.42',u:true},
+  {id:4,p:'USD/JPY',cat:'Forex',s:88,c:'-0.38',u:false},
+  {id:5,p:'BNB/USD',cat:'Crypto',s:86,c:'+1.22',u:true},
+  {id:6,p:'AMZN',cat:'Equity',s:83,c:'+2.11',u:true},
+  {id:7,p:'GBP/USD',cat:'Forex',s:82,c:'+0.31',u:true},
+  {id:8,p:'AAPL',cat:'Equity',s:81,c:'+1.04',u:true},
+  {id:9,p:'ETH/USD',cat:'Crypto',s:79,c:'+0.92',u:true},
+  {id:10,p:'EUR/USD',cat:'Forex',s:73,c:'+0.12',u:true},
+  {id:11,p:'WTI/USD',cat:'Commodity',s:75,c:'+1.33',u:true},
+  {id:12,p:'MSFT',cat:'Equity',s:77,c:'+0.88',u:true},
+  {id:13,p:'XAU/USD',cat:'Commodity',s:71,c:'-0.44',u:false},
+  {id:14,p:'XRP/USD',cat:'Crypto',s:72,c:'+1.05',u:true},
+  {id:15,p:'TSLA',cat:'Equity',s:63,c:'-1.22',u:false},
+];
+function sc(s){return s>=85?'bs-hi':s>=70?'bs-md':'bs-lo'}
+function sl(s){return s>=85?'High':s>=70?'Medium':'Low'}
+
+/* ── HEATMAP DATA ───────────────────────── */
+const HM=[
+  {p:'EUR/USD',l:75,s:23},{p:'USD/JPY',l:89,s:11},
+  {p:'GBP/USD',l:70,s:11},{p:'AUD/USD',l:70,s:13},
+];
+const NEWS=[
+  {t:'13:47',x:'<b>NFP</b> Smashes Expectations — Dollar Surges'},
+  {t:'13:37',x:'<b>ECB</b> Lagarde Hints at Rate Pause'},
+  {t:'13:12',x:'<b>USD/JPY</b> Breakout — BoJ Conviction Signal'},
+  {t:'12:58',x:'<b>BTC</b> Breaks $67K — Score 94, Institutional Buy'},
+  {t:'12:41',x:'<b>Gold</b> dips as Dollar Strength weighs'},
+];
+
+/* ── PAGE ROUTER ────────────────────────── */
+function go(id){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.toggle('on',p.id==='pg-'+id));
+  document.querySelectorAll('.nav-a').forEach(a=>{
+    a.classList.toggle('active',a.getAttribute('onclick')&&a.getAttribute('onclick').includes(`'${id}'`)&&!a.getAttribute('onclick').includes('Scroll'));
+  });
+  if(id==='app')buildApp();
+}
+function goScroll(pg,sec){
+  go(pg);
+  setTimeout(()=>{const el=document.getElementById(sec);if(el)el.scrollIntoView({behavior:'smooth'})},80);
+}
+
+/* ── APP TAB SWITCHER ───────────────────────
+   Unified: syncs BOTH sidebar AND bottom nav
+   so active emerald glow is always consistent
+   regardless of which nav the user is using.
+─────────────────────────────────────────── */
+let _activeTab = 'dash';
+
+function aTab(id){
+  _activeTab = id;
+
+  // switch content panels
+  document.querySelectorAll('.app-tab').forEach(t=>t.classList.remove('on'));
+  const panel=document.getElementById('at-'+id);if(panel)panel.classList.add('on');
+
+  // sync sidebar items
+  document.querySelectorAll('.sb-item').forEach(s=>{
+    const oc=s.getAttribute('onclick')||'';
+    s.classList.toggle('on', oc.includes(`'${id}'`) && !oc.includes('home') && !oc.includes('Settings'));
+  });
+
+  // sync bottom nav items
+  document.querySelectorAll('.bnav-item').forEach(b=>{
+    const oc=b.getAttribute('onclick')||'';
+    b.classList.toggle('on', oc.includes(`'${id}'`));
+  });
+}
+
+/* bnav() now just calls aTab() so the two always agree */
+function bnav(el){
+  // active class is handled inside aTab() — no-op kept for legacy onclick calls
+  void el;
+}
+
+/* nav switching is 100% CSS — no JS needed */
+
+/* ── APP BUILD ──────────────────────────── */
+let appBuilt=false;
+function buildApp(){
+  if(appBuilt)return;appBuilt=true;
+
+  // dash movers
+  const dm=document.getElementById('dash-movers');
+  if(dm)dm.innerHTML=`<thead><tr><th>Pair</th><th>Trend</th><th>Score</th><th>Chg</th></tr></thead><tbody>`+
+    FEED.slice(0,8).map(d=>`<tr>
+      <td class="cell-pair">${d.p}</td>
+      <td>${spark(d.u)}</td>
+      <td><span class="badge-score ${sc(d.s)}">${d.s} · ${sl(d.s)}</span></td>
+      <td class="${d.u?'up':'dn'}" style="font-family:var(--ff-mono);font-size:10px">${d.u?'+':''}${d.c}%</td>
+    </tr>`).join('')+'</tbody>';
+
+  // dash heatmap
+  const dh=document.getElementById('dash-hm');
+  if(dh)dh.innerHTML=HM.map(h=>`
+    <div class="hm-cell">
+      <div class="hm-pair">${h.p}</div>
+      <div class="hm-bar-row"><span class="hm-bar-lbl">Long</span><div class="hm-bar-track"><div class="hm-fill-em" style="width:${h.l}%"></div></div><span class="hm-pct up">${h.l}%</span></div>
+      <div class="hm-bar-row"><span class="hm-bar-lbl">Short</span><div class="hm-bar-track"><div class="hm-fill-red" style="width:${h.s}%"></div></div><span class="hm-pct dn">${h.s}%</span></div>
+    </div>`).join('');
+
+  // dash news
+  const dn=document.getElementById('dash-news');
+  if(dn)dn.innerHTML=NEWS.map(n=>`<div class="nfi"><span class="nfi-t">${n.t}</span><div class="nfi-x">${n.x}</div></div>`).join('');
+
+  // feed table
+  const fr=document.getElementById('feed-rows');
+  if(fr)fr.innerHTML=FEED.map(d=>`<tr>
+    <td style="font-family:var(--ff-mono);font-size:9px;color:var(--txt3)">${d.id}</td>
+    <td class="cell-pair">${d.p}</td>
+    <td><span class="cell-cat">${d.cat}</span></td>
+    <td>${spark(d.u)}</td>
+    <td><span class="badge-score ${sc(d.s)}">${d.s}</span></td>
+    <td><span class="badge-score ${sc(d.s)}">${sl(d.s)}</span></td>
+    <td class="${d.u?'up':'dn'}" style="font-family:var(--ff-mono);font-size:10px">${d.u?'+':''}${d.c}%</td>
+    <td><div class="filt-btn" onclick="aTab('asset')" style="font-size:9px;padding:4px 8px;cursor:pointer">Dive</div></td>
+  </tr>`).join('');
+
+  // full heatmap
+  const hfull=[
+    {p:'EUR/USD',l:75,s:23},{p:'USD/JPY',l:89,s:11},{p:'GBP/USD',l:70,s:11},{p:'AUD/USD',l:70,s:13},
+    {p:'BTC/USD',l:82,s:18},{p:'ETH/USD',l:74,s:26},{p:'SOL/USD',l:88,s:12},{p:'BNB/USD',l:65,s:35},
+    {p:'NVDA',l:91,s:9},{p:'AAPL',l:77,s:23},{p:'AMZN',l:83,s:17},{p:'TSLA',l:38,s:62},
+    {p:'XAU/USD',l:55,s:45},{p:'WTI/USD',l:72,s:28},{p:'USD/CAD',l:60,s:40},{p:'NZD/USD',l:48,s:52},
+  ];
+  const hmf=document.getElementById('hm-full');
+  if(hmf)hmf.innerHTML=hfull.map(h=>{
+    const em=h.l>=80,med=h.l>=60;
+    const col=em?'var(--em)':med?'var(--gold)':'var(--red)';
+    const bg=em?'rgba(16,185,129,.06)':med?'rgba(245,158,11,.05)':'rgba(244,63,94,.05)';
+    const bc=em?'rgba(16,185,129,.18)':med?'rgba(245,158,11,.14)':'rgba(244,63,94,.12)';
+    return `<div style="background:${bg};border:1px solid ${bc};border-radius:11px;padding:14px;cursor:pointer;transition:transform .2s,border-color var(--trans)" onmouseenter="this.style.transform='scale(1.03)'" onmouseleave="this.style.transform='scale(1)'" onclick="aTab('asset')">
+      <div style="font-family:var(--ff-mono);font-size:10px;color:var(--txt);margin-bottom:5px">${h.p}</div>
+      <div style="font-size:26px;font-weight:900;color:${col};line-height:1;${em?`text-shadow:0 0 20px ${col}44`:''}">${h.l}</div>
+      <div style="font-family:var(--ff-mono);font-size:8px;color:${col};margin-bottom:7px;letter-spacing:1px">${em?'HIGH':med?'MEDIUM':'LOW'} CONVICTION</div>
+      <div style="height:3px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden;margin-bottom:4px"><div style="height:100%;width:${h.l}%;background:${col};border-radius:2px"></div></div>
+      <div style="display:flex;justify-content:space-between;font-family:var(--ff-mono);font-size:8px;color:var(--txt3)"><span>L ${h.l}%</span><span>S ${h.s}%</span></div>
+    </div>`;
+  }).join('');
+
+  // alerts
+  const ac=document.getElementById('alerts-card');
+  if(ac){
+    const al=[
+      {p:'BTC/USD',c:'Score crosses above',v:'90',status:'active'},
+      {p:'USD/JPY',c:'Price drops below',v:'149.50',status:'active'},
+      {p:'NVDA',c:'Score crosses above',v:'85',status:'fired'},
+    ];
+    ac.innerHTML='<div class="scard-title"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> Active Alerts</div>'+al.map(a=>`
+      <div class="alert-item">
+        <div class="alert-dot ${a.status}"></div>
+        <div style="flex:1">
+          <div class="alert-name">${a.p}</div>
+          <div class="alert-cond">${a.c} <b>${a.v}</b></div>
+        </div>
+        <span class="alert-status ${a.status==='active'?'as-active':'as-fired'}">${a.status.toUpperCase()}</span>
+        <button class="btn-del" onclick="this.closest('.alert-item').style.opacity='.3'">×</button>
+      </div>`).join('');
+  }
+
+  // bots in app
+  buildBots('bots-app');
+
+  // ipr list on landing
+  buildIPR();
+}
+
+/* ── INTEL PREVIEW (landing bento) ─────── */
+function buildIPR(){
+  const el=document.getElementById('ipr-list');if(!el||el.children.length)return;
+  el.innerHTML=FEED.slice(0,5).map(d=>`
+    <div class="ipr">
+      <span class="ipr-pair">${d.p}</span>
+      <div class="ipr-bar"><div class="ipr-fill" style="width:${d.s}%"></div></div>
+      <span class="ipr-sc">${d.s}</span>
+      <span class="ipr-chg ${d.u?'up':'dn'}">${d.u?'+':''}${d.c}%</span>
+    </div>`).join('');
+}
+buildIPR();
+
+/* ── SVG ICON STRINGS for bots ───────────── */
+const IC={
+  scalper:`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
+  brain:`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>`,
+  crypto:`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`,
+  dca:`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>`,
+  arb:`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
+  hedge:`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+};
+
+/* ── BOTS DATA ──────────────────────────── */
+const BOTS=[
+  {ic:IC.scalper,n:'Alpha Scalper Pro',sub:'High-freq Forex scalper',badge:'bb-live',btxt:'LIVE',feat:true,roi:'+34.2%',tr:'1,204',wr:'71%',desc:'Executes 100–300 micro-trades per day using Mensch Score momentum bursts. Optimized for EUR/USD and USD/JPY during London session.',tags:['FOREX','EUR/USD','SCALP','LONDON'],price:49,note:'Per month · Cancel anytime'},
+  {ic:IC.brain,n:'Conviction Bot X',sub:'Mensch Score signal trader',badge:'bb-hot',btxt:'HOT',feat:false,roi:'+28.7%',tr:'342',wr:'68%',desc:'Trades exclusively on assets with Mensch Score ≥85. Waits for institutional-grade conviction before any entry.',tags:['MULTI-ASSET','SCORE ≥85','SWING'],price:79,note:'Pro plan required'},
+  {ic:IC.crypto,n:'Crypto Momentum',sub:'BTC/ETH/SOL trend rider',badge:'bb-new',btxt:'NEW',feat:false,roi:'+51.3%',tr:'88',wr:'63%',desc:'Rides large crypto momentum waves. Uses sentiment heatmap + Mensch Score convergence as triggers. Holds 2–5 days.',tags:['CRYPTO','BTC','ETH','SOL'],price:59,note:'30-day backtest'},
+  {ic:IC.dca,n:'DCA Intelligence',sub:'Smart accumulation engine',badge:'bb-live',btxt:'LIVE',feat:false,roi:'+19.4%',tr:'24',wr:'100%',desc:'Systematic DCA bot that increases position size when Mensch Score drops below 50 (buying the intelligent dip).',tags:['DCA','BTC','ETH','LOW RISK'],price:29,note:'Beginner friendly'},
+  {ic:IC.arb,n:'Arbitrage Engine',sub:'Cross-exchange spread capture',badge:'bb-live',btxt:'LIVE',feat:false,roi:'+12.1%',tr:'4,820',wr:'89%',desc:'Captures price discrepancies across Binance, Kraken, and Coinbase. Ultra-low risk, ultra-high frequency.',tags:['ARBITRAGE','MULTI-EXCHANGE'],price:99,note:'Institutional grade'},
+  {ic:IC.hedge,n:'Hedge Protocol',sub:'Automated portfolio protection',badge:'bb-new',btxt:'NEW',feat:false,roi:'-2.1%',tr:'12',wr:'100%',desc:'Opens hedge positions when Mensch Score drops below 40. Protects against market downturns. Essential risk layer.',tags:['HEDGING','RISK MGMT','PRO'],price:69,note:'Risk management tool'},
+];
+
+function buildBots(id){
+  const c=document.getElementById(id);if(!c||c.children.length)return;
+  c.innerHTML=BOTS.map(b=>`
+    <div class="bot-card${b.feat?' featured':''}">
+      <div class="bot-top-bar"></div>
+      <div class="bot-hdr">
+        <div class="bot-top">
+          <div class="bot-icon">${b.ic}</div>
+          <span class="bot-badge ${b.badge}">${b.btxt}</span>
+        </div>
+        <div class="bot-name">${b.n}</div>
+        <div class="bot-sub">${b.sub}</div>
+      </div>
+      <div class="bot-chart-wrap">
+        ${spark(parseFloat(b.roi)>0,260,44)}
+        <div class="bot-30d">30D</div>
+      </div>
+      <div class="bot-stats">
+        <div class="bot-stat"><div class="bs-val ${parseFloat(b.roi)>0?'up':'dn'}">${b.roi}</div><div class="bs-lbl">30D ROI</div></div>
+        <div class="bot-stat"><div class="bs-val">${b.tr}</div><div class="bs-lbl">TRADES</div></div>
+        <div class="bot-stat"><div class="bs-val up">${b.wr}</div><div class="bs-lbl">WIN RATE</div></div>
+      </div>
+      <div class="bot-body">
+        <div class="bot-desc">${b.desc}</div>
+        <div class="bot-tags">${b.tags.map(t=>`<span class="btag">${t}</span>`).join('')}</div>
+        <div class="bot-footer">
+          <div>
+            <div class="bot-price">$${b.price}<sub>/mo</sub></div>
+            <div class="bot-price-note">${b.note}</div>
+          </div>
+          <button class="btn-bot ${b.feat?'btn-bot-em':'btn-bot-ghost'}" onclick="go('app');aTab('bots-app')">${b.feat?'Deploy Now →':'View Bot'}</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+buildBots('bots-grid');
+
+/* ── PRICING ────────────────────────────── */
+const PLANS=[
+  {tier:'FREE',price:0,desc:'First taste of sovereign alpha.',
+   items:[['✓','100 signals/day'],['✓','Sentiment heatmap'],['✓','3 watchlist slots'],['✓','Zenith AI (5/day)'],['✗','Full 466K feed'],['✗','Trading Bots'],['✗','API Access']],
+   btn:'btn-pc-out',btxt:'Start Free'},
+  {tier:'PRO',price:49,desc:'Full access for serious traders.',pro:true,
+   items:[['✓','Unlimited signals'],['✓','Full 466K feed'],['✓','All Trading Bots'],['✓','Zenith AI (unlimited)'],['✓','AI Research Lab'],['✓','API Key (1 key)'],['✓','Priority support']],
+   btn:'btn-pc-em',btxt:'Start Pro Trial'},
+  {tier:'INSTITUTIONAL',price:299,desc:'For funds and prop desks.',
+   items:[['✓','Everything in Pro'],['✓','Dedicated Supabase'],['✓','Unlimited API keys'],['✓','Custom webhooks'],['✓','White-label option'],['✓','SLA + Onboarding'],['✓','Custom bot builds']],
+   btn:'btn-pc-out',btxt:'Contact Sales'},
+];
+document.getElementById('pricing-grid').innerHTML=PLANS.map(p=>`
+  <div class="price-card${p.pro?' pro':''}">
+    <div class="pc-tier">${p.tier}</div>
+    <div class="pc-price">$${p.price}<span>/mo</span></div>
+    <div class="pc-desc">${p.desc}</div>
+    <ul class="pc-list">${p.items.map(i=>`<li><span class="${i[0]==='✓'?'pck':'pcx'}">${i[0]==='✓'?'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>':'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'}</span>${i[1]}</li>`).join('')}</ul>
+    <button class="btn-pc ${p.btn}" onclick="go('app')">${p.btxt}</button>
+  </div>`).join('');
+
+/* ── WHAT-IF SIM ────────────────────────── */
+function sim(btn,delta){
+  document.querySelectorAll('#at-asset .filt-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  const ns=Math.max(0,Math.min(100,Math.round(94*(1+delta/100)+(delta>0?2:-3))));
+  const sv=document.getElementById('sim-v');
+  sv.textContent=ns;
+  sv.style.color=ns>=94?'var(--em)':ns>=80?'var(--gold)':'var(--red)';
+  document.getElementById('sim-n').textContent={5:'Mild expansion — holds.',10:'Moderate stress — slight drop.',20:'High vol — significant drop.','-10':'Compression — spike likely.'}[delta]||'';
+}
+
+/* ── AGENT ──────────────────────────────── */
+let agentOpen=false;
+function toggleAgent(){
+  agentOpen=!agentOpen;
+  document.getElementById('agent-panel').classList.toggle('open',agentOpen);
+  document.getElementById('agent-backdrop').classList.toggle('show',agentOpen);
+}
+const AR=[
+  "Based on current data, <strong>BTC/USD holds Mensch Score 94</strong> — the highest active signal. Want me to open the full deep-dive?",
+  "Running query… <strong>14 Forex pairs</strong> show conviction above 80 right now. Top: USD/JPY at 88. Should I filter the feed?",
+  "<strong>3-point brief:</strong><br>• NVDA leads Tech at 91 (+4.12%)<br>• BTC broke $66K — confirmation active<br>• Fed decision at 17:00 GMT — macro caution",
+  "<strong>Note:</strong> Not financial advice — AI intelligence only. EUR/USD technicals weak vs macro. Conviction: 73.",
+];
+let ai=0;
+function sendAgent(){
+  const inp=document.getElementById('agent-in'),msg=inp.value.trim();if(!msg)return;
+  const msgs=document.getElementById('agent-msgs');
+  msgs.innerHTML+=`<div class="amsg amsg-user">${msg}</div>`;
+  inp.value='';
+  const dot=document.createElement('div');dot.className='amsg amsg-ai';
+  dot.innerHTML='<div class="tdots"><div class="td"></div><div class="td"></div><div class="td"></div></div>';
+  msgs.appendChild(dot);msgs.scrollTop=msgs.scrollHeight;
+  setTimeout(()=>{dot.innerHTML=AR[ai%AR.length];ai++;msgs.scrollTop=msgs.scrollHeight},850+Math.random()*450);
+}
+
+/* ── LAB ─────────────────────────────────── */
+const LR=[
+  "Querying 466,984 rows for AI/ML equities…\n\nFound **23 assets** tagged `AI/ML`. Avg Mensch Score: **84.2** (+12% WoW).\n\n**Top 3:** NVDA (91), MSFT (77), AMD (75). Rendering report on canvas…",
+  "**Top 10 Forex by Conviction:**\n1. USD/JPY — 88\n2. GBP/USD — 82\n3. EUR/USD — 73\n\nMacro risk: Fed at 17:00 GMT.",
+  "**Daily Brief:**\n• Tech leads — NVDA 91, sector +2.3%\n• Crypto bullish — BTC broke $66K\n• Macro caution — CPI at 14:30 GMT\n\nOverall: **Cautiously Bullish**",
+];
+let li=0;
+function sendLab(){const i=document.getElementById('lab-in');labMsg(i.value.trim());i.value=''}
+function labMsg(msg){
+  if(!msg)return;
+  const msgs=document.getElementById('lab-msgs');
+  msgs.innerHTML+=`<div class="lm-user"><div class="lm-av av-user"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="lm-bubble lm-bubble-user">${msg}</div></div>`;
+  const dot=document.createElement('div');dot.className='lm-ai';
+  dot.innerHTML='<div class="lm-av av-ai"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/><circle cx="9" cy="14" r="1.5" fill="white" stroke="none"/><circle cx="15" cy="14" r="1.5" fill="white" stroke="none"/><line x1="9" y1="17" x2="15" y2="17"/></svg></div><div class="lm-bubble lm-bubble-ai"><div class="tdots"><div class="td"></div><div class="td"></div><div class="td"></div></div></div>';
+  msgs.appendChild(dot);msgs.scrollTop=msgs.scrollHeight;
+  setTimeout(()=>{
+    const rep=LR[li%LR.length];li++;
+    dot.querySelector('.lm-bubble').innerHTML=rep.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/`(.*?)`/g,'<code style="font-family:var(--ff-mono);font-size:10px;background:rgba(16,185,129,.1);padding:1px 5px;border-radius:3px;color:var(--em)">$1</code>').replace(/\n/g,'<br>');
+    msgs.scrollTop=msgs.scrollHeight;
+    renderCanvas(rep);
+  },1100+Math.random()*500);
+}
+function renderCanvas(txt){
+  const gh=document.getElementById('canvas-ghosts');
+  const cr=document.getElementById('canvas-report');
+  if(gh)gh.style.display='none';
+  if(cr){
+    cr.className='canvas-report show';
+    cr.innerHTML=`
+      <div class="cr-hdr">AI Report · ${new Date().toLocaleTimeString()}</div>
+      <div class="cr-sub" style="font-family:var(--ff-mono)">466,984 rows queried · Gemini 2.5 Flash · Zenith Agent</div>
+      <table class="intel-table">
+        <thead><tr><th>Asset</th><th>Score</th><th>Category</th><th>Signal</th><th>24h</th></tr></thead>
+        <tbody>${FEED.slice(0,6).map(d=>`<tr>
+          <td class="cell-pair">${d.p}</td>
+          <td><span class="badge-score ${sc(d.s)}">${d.s}</span></td>
+          <td><span class="cell-cat">${d.cat}</span></td>
+          <td class="${d.u?'up':'dn'}" style="font-family:var(--ff-mono);font-size:10px;font-weight:600">${d.u?'BUY ↑':'SELL ↓'}</td>
+          <td class="${d.u?'up':'dn'}" style="font-family:var(--ff-mono);font-size:10px">${d.u?'+':''}${d.c}%</td>
+        </tr>`).join('')}</tbody>
+      </table>
+      <div style="font-family:var(--ff-mono);font-size:8px;color:var(--txt3);padding-top:8px">Not financial advice. AI intelligence only.</div>`;
+  }
+}
+
+/* ── FILT BTN TOGGLE ────────────────────── */
+document.querySelectorAll('.filt-btn:not([onclick])').forEach(b=>{
+  b.addEventListener('click',function(){
+    const tb=this.closest('.intel-toolbar');
+    if(tb){tb.querySelectorAll('.filt-btn:not([onclick])').forEach(x=>x.classList.remove('on'))}
+    this.classList.toggle('on');
+  });
+});
+
+/* ── INTEL TAB BUILD HOOK ───────────────── */
+const _origATab=aTab;
+function aTab(id){
+  _origATab(id);
+  if(id==='intel') buildIntel();
+}
+function buildIntel(){
+  const REPORTS=[
+    {rank:1,tag:'FOREX',tCls:'tag-forex',title:'USD/JPY BREAKOUT: BoJ Decision Triggers High-Conviction Signal',meta:'14:12 · 6 min',score:94,sCls:'i-rs-hi',feat:true},
+    {rank:2,tag:'CRYPTO',tCls:'tag-crypto',title:'BITCOIN: BTC Breaks $67K — Score 94, Institutional Buy Returns',meta:'13:58 · 4 min',score:91,sCls:'i-rs-hi',feat:false},
+    {rank:3,tag:'EQUITY',tCls:'tag-equity',title:'NVIDIA Scores 91 on Mensch Scale Following Blackwell Demand Surge',meta:'13:44 · 5 min',score:91,sCls:'i-rs-hi',feat:false},
+    {rank:4,tag:'MACRO',tCls:'tag-macro',title:'EUROZONE INFLATION: Lagarde Hints at Rate Pause — EUR/USD Impact',meta:'13:37 · 6 min',score:73,sCls:'i-rs-md',feat:false},
+    {rank:5,tag:'FOREX',tCls:'tag-forex',title:'GBP/USD: Sterling Holds Gains as UK Jobs Data Beats Forecast',meta:'13:22 · 3 min',score:82,sCls:'i-rs-hi',feat:false},
+    {rank:6,tag:'CRYPTO',tCls:'tag-crypto',title:'SOL Momentum Score Hits 88: Three Catalysts Behind the Move',meta:'13:10 · 4 min',score:88,sCls:'i-rs-hi',feat:false},
+    {rank:7,tag:'MACRO',tCls:'tag-macro',title:'US Non-Farm Payrolls Smash Expectations — Dollar Index Surges',meta:'12:47 · 5 min',score:85,sCls:'i-rs-hi',feat:false},
+    {rank:8,tag:'EQUITY',tCls:'tag-equity',title:'AMAZON Q1 Beats: Cloud Revenue Drives Mensch Score to 83',meta:'12:33 · 4 min',score:83,sCls:'i-rs-hi',feat:false},
+    {rank:9,tag:'COMMODITY',tCls:'tag-commodity',title:'GOLD Pulls Back as Dollar Strength Weighs on Safe Haven Demand',meta:'12:18 · 3 min',score:71,sCls:'i-rs-md',feat:false},
+    {rank:10,tag:'CRYPTO',tCls:'tag-crypto',title:'ETH Gas Fees Drop 40%: Network Upgrade Drives Conviction Spike',meta:'12:05 · 4 min',score:79,sCls:'i-rs-md',feat:false},
+    {rank:11,tag:'FOREX',tCls:'tag-forex',title:'AUD/USD Weakens as China PMI Disappoints — Score Drops to 66',meta:'11:52 · 3 min',score:66,sCls:'i-rs-lo',feat:false},
+    {rank:12,tag:'MACRO',tCls:'tag-macro',title:'Fed Minutes Reveal Split on Rate Path — USD Reaction Muted',meta:'11:38 · 5 min',score:70,sCls:'i-rs-md',feat:false},
+  ];
+  const rl=document.getElementById('i-report-list');
+  if(rl&&!rl.children.length) rl.innerHTML=REPORTS.map(r=>`
+    <div class="i-report-item${r.feat?' feat':''}">
+      <div class="i-rank${r.feat?' em':''}">${r.rank}</div>
+      <div class="i-rbody">
+        <div class="i-rtag ${r.tCls}">${r.tag}</div>
+        <div class="i-rtitle">${r.title}</div>
+        <div class="i-rmeta"><span class="i-rscore ${r.sCls}">${r.score}</span>${r.meta}</div>
+      </div>
+    </div>`).join('');
+
+  const ARTICLES=[
+    {tag:'CRYPTO',tCls:'tag-crypto',title:'BITCOIN: Institutional Accumulation Resumes Above $66K — Mensch Score 94',time:'13:58',score:94,up:true},
+    {tag:'EQUITY',tCls:'tag-equity',title:'NVIDIA Scores 91 on Mensch Scale as Blackwell Demand Surge Confirmed',time:'13:44',score:91,up:true},
+    {tag:'MACRO',tCls:'tag-macro',title:'ECB Rate Pause Signals — What Lagarde Really Said Between the Lines',time:'13:37',score:73,up:true},
+    {tag:'FOREX',tCls:'tag-forex',title:'GBP/USD Holds Gains After UK Jobs Data Beats Forecast by Wide Margin',time:'13:22',score:82,up:true},
+  ];
+  const ag=document.getElementById('i-article-grid');
+  if(ag&&!ag.children.length) ag.innerHTML=ARTICLES.map(a=>`
+    <div class="i-article">
+      <div class="i-athumb">${spark(a.up,180,60)}</div>
+      <div class="i-atag ${a.tCls}">${a.tag}</div>
+      <div class="i-atitle">${a.title}</div>
+      <div class="i-ameta">
+        <span style="font-family:var(--ff-mono);font-size:9px;padding:1px 6px;border-radius:2px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);color:var(--em)">${a.score}</span>
+        <span>${a.time} GMT</span>
+      </div>
+    </div>`).join('');
+
+  const FEED=[
+    {t:'14:12',x:'<b>USD/JPY BREAKOUT:</b> BoJ Decision Triggers Highest-Conviction Forex Signal of Q2'},
+    {t:'13:58',x:'<b>BITCOIN:</b> BTC Breaks $67K Resistance — Mensch Score Spikes to 94'},
+    {t:'13:47',x:'<b>NFP:</b> US Non-Farm Payrolls Smash 272K vs 182K Forecast — Dollar Surges'},
+    {t:'13:37',x:'<b>ECB:</b> Lagarde Hints at Rate Pause — EUR/USD Conviction Drops to 73'},
+    {t:'13:12',x:'<b>SOL:</b> Solana Momentum Score Hits 88 on Three Converging Catalysts'},
+  ];
+  const lf=document.getElementById('i-live-feed');
+  if(lf&&!lf.children.length) lf.innerHTML=FEED.map(f=>`
+    <div class="i-feed-item">
+      <div class="i-ftime">${f.t}</div>
+      <div class="i-farrow">›</div>
+      <div class="i-ftext">${f.x}</div>
+    </div>`).join('');
+
+  const CAL=[
+    {dot:'hi',time:'14:30',event:'US CPI (Consumer Price Index)',impact:'HIGH',iCls:'i-imp-hi'},
+    {dot:'md',time:'16:00',event:'BoE Governor Bailey Speaks',impact:'',iCls:''},
+    {dot:'hi',time:'16:00',event:'BoE Monetary Policy Decision',impact:'HIGH',iCls:'i-imp-hi'},
+    {dot:'md',time:'17:00',event:'BoE Governor Press Conference',impact:'MED',iCls:'i-imp-md'},
+    {dot:'hi',time:'19:00',event:'Fed Vice Chair Speaks',impact:'HIGH',iCls:'i-imp-hi'},
+  ];
+  const cl=document.getElementById('i-cal-list');
+  if(cl&&!cl.children.length) cl.innerHTML=CAL.map(c=>`
+    <div class="i-cal-item">
+      <div class="i-cdot ${c.dot}"></div>
+      <div class="i-ctime">${c.time}</div>
+      <div class="i-cevent">${c.event}</div>
+      ${c.impact?`<div class="i-cimpact ${c.iCls}">${c.impact}</div>`:''}
+    </div>`).join('');
+
+  const HM=[{p:'EUR/USD',l:75,s:23},{p:'USD/JPY',l:89,s:11},{p:'GBP/USD',l:70,s:11},{p:'AUD/USD',l:70,s:13}];
+  const hm=document.getElementById('i-hm-grid');
+  if(hm&&!hm.children.length) hm.innerHTML=HM.map(h=>`
+    <div class="i-hm-cell">
+      <div class="i-hm-pair">${h.p}</div>
+      <div class="i-hm-row"><span class="i-hm-lbl">Long</span><div class="i-hm-track"><div class="i-hm-em" style="width:${h.l}%"></div></div><span class="i-hm-pct up">${h.l}%</span></div>
+      <div class="i-hm-row"><span class="i-hm-lbl">Short</span><div class="i-hm-track"><div class="i-hm-red" style="width:${h.s}%"></div></div><span class="i-hm-pct dn">${h.s}%</span></div>
+    </div>`).join('');
+
+  function iChart(id,c1,c2,l1,l2){
+    const el=document.getElementById(id);if(!el)return;
+    const w=el.offsetWidth||380,h=80;
+    function ln(){
+      const pts=[];let v=50;
+      for(let i=0;i<=28;i++){
+        v=Math.max(10,Math.min(90,v+(Math.random()-.47)*15));
+        pts.push(`${((i/28)*w).toFixed(1)},${(h-((v/100)*(h-12))-6).toFixed(1)}`);
+      }return pts.join(' ');
+    }
+    const p1=ln(),p2=ln();
+    const e1=parseFloat(p1.split(' ').pop().split(',')[1]);
+    const e2=parseFloat(p2.split(' ').pop().split(',')[1]);
+    el.innerHTML=`<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+      <line x1="0" y1="${h/2}" x2="${w}" y2="${h/2}" stroke="rgba(255,255,255,.04)" stroke-dasharray="3,3"/>
+      <polyline points="${p1}" fill="none" stroke="${c1}" stroke-width="1.5" stroke-linecap="round"/>
+      <polyline points="${p2}" fill="none" stroke="${c2}" stroke-width="1.5" stroke-linecap="round" opacity=".8"/>
+      <circle cx="${w}" cy="${e1}" r="3" fill="${c1}" style="filter:drop-shadow(0 0 4px ${c1})"/>
+      <circle cx="${w}" cy="${e2}" r="3" fill="${c2}" style="filter:drop-shadow(0 0 4px ${c2})"/>
+      <text x="${w-4}" y="${e1-5}" text-anchor="end" fill="${c1}" font-family="Roboto Mono" font-size="9">${l1}</text>
+      <text x="${w-4}" y="${e2+11}" text-anchor="end" fill="${c2}" font-family="Roboto Mono" font-size="9">${l2}</text>
+    </svg>`;
+  }
+  setTimeout(()=>{
+    iChart('i-chart1','#10b981','#f43f5e','DXY 104.2','BTC $67.2K');
+    iChart('i-chart2','#10b981','#f59e0b','10Y 4.38%','XAU $2,312');
+  },80);
+
+  /* category filter toggle */
+  document.querySelectorAll('.i-cat').forEach(b=>{
+    b.addEventListener('click',function(){
+      document.querySelectorAll('.i-cat').forEach(x=>x.classList.remove('on'));
+      this.classList.add('on');
+    });
+  });
+}
+</script>
+</body>
+</html>
