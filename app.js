@@ -1,48 +1,42 @@
-/* ── ANIMATED MESH CANVAS ──────────────────── */
+/* ── STATIC MESH BACKGROUND (no animation) ─── */
 (function(){
   const cv=document.getElementById('hero-canvas');
   if(!cv)return;
-  const ctx=cv.getContext('2d');
-  let W,H,pts=[],animId=null,isMobile=window.innerWidth<768;
-  const SPACING=isMobile?180:100;
-  function resize(){W=cv.width=cv.offsetWidth;H=cv.height=cv.offsetHeight||innerHeight}
-  function init(){
-    pts=[];
-    const cols=Math.ceil(W/SPACING)+1,rows=Math.ceil(H/SPACING)+1;
-    for(let r=0;r<rows;r++)for(let c=0;c<cols;c++)
-      pts.push({bx:c*SPACING,by:r*SPACING,ox:0,oy:0,vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3});
+  // On mobile, skip canvas entirely — use CSS gradient instead
+  if(window.innerWidth<768){
+    cv.style.display='none';
+    const pg=document.getElementById('pg-home');
+    if(pg)pg.style.background='radial-gradient(ellipse at 50% 30%,rgba(16,185,129,.04) 0%,transparent 60%)';
+    window._canvasCtrl={start:function(){},stop:function(){}};
+    return;
   }
-  let lastTime=0,fps=isMobile?24:60,interval=1000/fps;
-  function draw(ts){
-    if(ts-lastTime<interval){animId=requestAnimationFrame(draw);return}
-    lastTime=ts;
+  // Desktop: draw ONCE as a static image, no animation loop
+  const ctx=cv.getContext('2d');
+  let W,H;
+  const SPACING=120;
+  function drawOnce(){
+    W=cv.width=cv.offsetWidth;H=cv.height=cv.offsetHeight||innerHeight;
     ctx.clearRect(0,0,W,H);
-    const cols=Math.ceil(W/SPACING)+1;
+    const cols=Math.ceil(W/SPACING)+1,rows=Math.ceil(H/SPACING)+1;
+    const pts=[];
+    for(let r=0;r<rows;r++)for(let c=0;c<cols;c++)
+      pts.push({x:c*SPACING+(Math.random()-.5)*10,y:r*SPACING+(Math.random()-.5)*10});
+    // Draw lines
+    ctx.strokeStyle='rgba(16,185,129,.05)';ctx.lineWidth=1;
     pts.forEach((p,i)=>{
-      p.ox+=p.vx;p.oy+=p.vy;
-      if(Math.abs(p.ox)>22)p.vx*=-1;
-      if(Math.abs(p.oy)>22)p.vy*=-1;
-      const x=p.bx+p.ox,y=p.by+p.oy;
       if((i+1)%cols!==0&&i+1<pts.length){
-        const q=pts[i+1];
-        ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(q.bx+q.ox,q.by+q.oy);
-        ctx.strokeStyle='rgba(16,185,129,.05)';ctx.lineWidth=1;ctx.stroke();
+        const q=pts[i+1];ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke();
       }
       if(i+cols<pts.length){
-        const q=pts[i+cols];
-        ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(q.bx+q.ox,q.by+q.oy);
-        ctx.strokeStyle='rgba(16,185,129,.05)';ctx.lineWidth=1;ctx.stroke();
+        const q=pts[i+cols];ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke();
       }
-      ctx.beginPath();ctx.arc(x,y,1.2,0,Math.PI*2);
-      ctx.fillStyle='rgba(16,185,129,.18)';ctx.fill();
+      ctx.beginPath();ctx.arc(p.x,p.y,1.2,0,Math.PI*2);ctx.fillStyle='rgba(16,185,129,.18)';ctx.fill();
     });
-    animId=requestAnimationFrame(draw);
   }
-  function startCanvas(){if(!animId){resize();init();animId=requestAnimationFrame(draw)}}
-  function stopCanvas(){if(animId){cancelAnimationFrame(animId);animId=null}}
-  startCanvas();
-  window.addEventListener('resize',()=>{resize();init()});
-  window._canvasCtrl={start:startCanvas,stop:stopCanvas};
+  drawOnce();
+  let resizeTimer;
+  window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(drawOnce,200)});
+  window._canvasCtrl={start:function(){},stop:function(){}};
 })();
 
 /* ── TICKER ─────────────────────────────── */
@@ -74,15 +68,15 @@ setInterval(()=>{
   const el=document.getElementById('clk');if(el)el.textContent=t;
 },1000);
 
-/* ── COUNTER ────────────────────────────── */
+/* ── COUNTER (lightweight) ─────────────── */
 (()=>{
   const el=document.getElementById('ctr');if(!el)return;
-  let v=0;const T=466984,st=Math.ceil(T/60);
-  function tick(){
-    v=Math.min(v+st,T);el.textContent=v.toLocaleString();
-    if(v<T)requestAnimationFrame(tick);
-  }
-  requestAnimationFrame(tick);
+  let v=0;const T=466984;
+  // Simple setInterval instead of rAF — less CPU pressure
+  const iv=setInterval(()=>{
+    v=Math.min(v+Math.ceil(T/30),T);el.textContent=v.toLocaleString();
+    if(v>=T)clearInterval(iv);
+  },50);
 })();
 
 /* ── SPARKS ─────────────────────────────── */
