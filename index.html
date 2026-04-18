@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="theme-color" content="#020617"/>
+<meta name="description" content="ZenschIQ — Sovereign Intelligence Terminal. Trade at the Sovereign Level with AI-powered conviction scoring."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <title>ZenschIQ — Sovereign Intelligence Terminal</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
 <style>
@@ -284,11 +288,15 @@ body::before{
 /* ═══════════════════════════════════════════
    SECTION SHELL
 ═══════════════════════════════════════════ */
-.sec{padding:5.5rem 0}
+.sec{padding:5.5rem 0;content-visibility:auto;contain-intrinsic-size:0 500px}
 .sec-ey{font-family:var(--ff-mono);font-size:10px;color:var(--em);letter-spacing:2px;text-transform:uppercase;margin-bottom:.6rem}
 .sec-title{font-size:clamp(30px,4vw,50px);font-weight:900;letter-spacing:-2px;line-height:1.05;margin-bottom:.9rem}
 .sec-sub{color:var(--txt2);max-width:460px;line-height:1.75;font-size:14px}
 .divider{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent)}
+
+/* GPU acceleration for animated elements */
+.pulse-dot,.agent-orb,.bot-card,.btn-cta::after{will-change:transform,box-shadow}
+.tick,.ticker-inner{will-change:transform}
 
 /* ═══════════════════════════════════════════
    STEPS (HOW IT WORKS)
@@ -1128,12 +1136,12 @@ footer{
 
   /* Zenith FAB above bottom nav */
   .agent-wrap{bottom:68px}
-  .agent-panel{bottom:62px}
+  .agent-panel{bottom:62px;width:calc(100vw - 24px);right:12px}
 
   /* ── grids stack ── */
   .g2{grid-template-columns:1fr}
   .g3{grid-template-columns:1fr}
-  .lab-layout{grid-template-columns:1fr}
+  .lab-layout{grid-template-columns:1fr;height:auto}
   .bots-app-grid{grid-template-columns:1fr}
   .stats-row{grid-template-columns:1fr}   /* single col on phone */
   .pillar-grid{grid-template-columns:repeat(3,1fr)}
@@ -1157,15 +1165,84 @@ footer{
   .intel-table td:nth-child(3){display:none}
   .intel-table th:nth-child(8),
   .intel-table td:nth-child(8){display:none}
+
+  /* ── tables scrollable ── */
+  .intel-wrap{overflow-x:auto}
+  .intel-table{min-width:540px}
+
+  /* ── agent panel full width ── */
+  .agent-panel{width:calc(100vw - 24px);right:12px}
 }
 
-/* ══ ≤ 600px extra tightening ══ */
-@media screen and (max-width:600px){
+/* ══ ≤ 768px tablet tightening ══ */
+@media screen and (max-width:768px){
+  .hero-title{font-size:clamp(36px,10vw,60px);letter-spacing:-1px}
+  .hero-sub{font-size:14px}
+  .bento .bc-4,.bento .bc-6,.bento .bc-12{grid-column:span 1}
+  .bot-card{border-radius:12px}
+  .price-card{padding:1.25rem}
+  .pc-price{font-size:32px}
+  .intel-grid{grid-template-columns:1fr}
+  .i-col1,.i-col3,.i-col2t,.i-col2m,.i-col2b,.i-bottom{grid-column:1;grid-row:auto}
+  .i-article-grid,.i-hm-grid,.i-charts-row{grid-template-columns:1fr}
+  .hm-full-grid{grid-template-columns:repeat(2,1fr)}
+  .pillar-grid{grid-template-columns:1fr 1fr 1fr}
+  .stats-row{grid-template-columns:1fr 1fr}
+  .container{padding:0 16px}
+  .sec{padding:3rem 0}
+  .lab-layout{grid-template-columns:1fr;height:auto}
+  .lab-layout .lab-chat{min-height:320px}
+  .lab-layout .lab-canvas-wrap{min-height:260px}
+}
+
+/* ══ ≤ 480px phone ══ */
+@media screen and (max-width:480px){
+  html{font-size:13px}
+  .hero-title{font-size:clamp(32px,12vw,48px);letter-spacing:-1px}
+  .hw3{font-size:50%}
+  .hero-ctas{flex-direction:column;align-items:center}
+  .hero-ctas .btn-hero{width:100%;text-align:center}
+  .hero-stats{flex-direction:column}
+  .hstat{border-right:none;border-bottom:1px solid var(--border)}
+  .hstat:last-child{border-bottom:none}
+  .stats-row{grid-template-columns:1fr}
+  .pillar-grid{grid-template-columns:1fr}
+  .pillar.featured .pillar-val{font-size:32px}
+  .hm-full-grid{grid-template-columns:1fr}
   .hm-cells{grid-template-columns:1fr}
   .scard,.stat-card{padding:12px}
   .app-hdr{flex-wrap:wrap;gap:8px}
   .app-hdr > div:last-child{margin-left:0}
+  .app-main{padding:12px 12px 72px}
+  .bot-stats{grid-template-columns:repeat(3,1fr);font-size:10px}
+  .nav{padding:0 12px;gap:0}
+  .nav-logo{font-size:16px;margin-right:12px}
+  .nav-right{gap:6px}
+  .btn-ghost{padding:6px 12px;font-size:11px}
+  .btn-cta{padding:6px 14px;font-size:11px}
+  .ticker-label{padding:0 8px;font-size:8px}
+  .tick{padding:0 10px;font-size:9px}
+  .agent-wrap{bottom:68px;right:12px}
+  .agent-orb{width:46px;height:46px;font-size:18px}
+  .agent-panel{width:calc(100vw - 16px);right:8px;bottom:58px}
+  .hero-inner{padding:2rem 16px 1.5rem}
+  .step{padding:1.5rem 1.25rem}
+  .bc{padding:1.25rem}
+  .sec{padding:2.5rem 0}
+  .sec-title{font-size:clamp(24px,6vw,36px)}
+  .sp-row{gap:1rem;padding:1rem 0}
+  .footer-links{gap:12px}
 }
+
+/* ══ ≤ 360px small phone ══ */
+@media screen and (max-width:360px){
+  html{font-size:12px}
+  .hero-title{font-size:28px;letter-spacing:0}
+  .bottom-nav{padding:0 2px}
+  .bnav-item span{font-size:8px}
+  .bnav-icon{width:30px;height:30px;font-size:14px}
+}
+
 /* ═══════════════════════════════════════════
    INTEL / BLOG TAB
 ═══════════════════════════════════════════ */
@@ -1320,12 +1397,7 @@ footer{
 .i-chart-canvas{width:100%;height:80px;overflow:hidden}
 .i-chart-canvas svg{width:100%;height:100%;display:block}
 
-/* mobile responsive for intel tab */
-@media(max-width:1023px){
-  .intel-grid{grid-template-columns:1fr}
-  .i-col1,.i-col3,.i-col2t,.i-col2m,.i-col2b,.i-bottom{grid-column:1;grid-row:auto}
-  .i-article-grid,.i-hm-grid,.i-charts-row{grid-template-columns:1fr}
-}
+
 </style>
 </head>
 <body>
@@ -2056,66 +2128,66 @@ footer{
     </main>
   </div>
 
-  <!-- MOBILE BOTTOM NAV — 1024px breakpoint -->
-  <nav class="bottom-nav" id="bottom-nav">
-    <div class="bnav-item on" id="bn-dash" onclick="aTab('dash');bnav(this)">
-      <div class="bnav-icon">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
-          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
-        </svg>
-      </div><span>Hub</span>
-    </div>
-    <div class="bnav-item" id="bn-feed" onclick="aTab('feed');bnav(this)">
-      <div class="bnav-icon">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
-          <line x1="8" y1="18" x2="21" y2="18"/>
-          <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
-        </svg>
-      </div><span>Feed</span>
-    </div>
-    <div class="bnav-item" id="bn-intel" onclick="aTab('intel');bnav(this)">
-      <div class="bnav-icon">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-          <line x1="9" y1="7" x2="15" y2="7"/>
-          <line x1="9" y1="11" x2="15" y2="11"/>
-        </svg>
-      </div><span>Intel</span>
-    </div>
-    <div class="bnav-item" id="bn-bots-app" onclick="aTab('bots-app');bnav(this)">
-      <div class="bnav-icon">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="8" width="18" height="13" rx="2"/>
-          <path d="M9 8V6a3 3 0 0 1 6 0v2"/>
-          <circle cx="9" cy="14" r="1.5" fill="currentColor" stroke="none"/>
-          <circle cx="15" cy="14" r="1.5" fill="currentColor" stroke="none"/>
-          <line x1="9" y1="17" x2="15" y2="17"/>
-        </svg>
-      </div><span>Bots</span>
-    </div>
-    <div class="bnav-item" id="bn-lab" onclick="aTab('lab');bnav(this)">
-      <div class="bnav-icon">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M9 3h6v8l3.5 6.5A2 2 0 0 1 16.76 21H7.24a2 2 0 0 1-1.74-2.5L9 11V3z"/>
-          <line x1="9" y1="3" x2="15" y2="3"/>
-        </svg>
-      </div><span>Lab</span>
-    </div>
-    <div class="bnav-item" id="bn-alerts" onclick="aTab('alerts');bnav(this)" style="position:relative">
-      <div class="bnav-icon">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-        </svg>
-      </div>
-      <div class="bnav-badge"></div>
-      <span>Alerts</span>
-    </div>
-  </nav>
 </div>
+
+<!-- ══ GLOBAL MOBILE BOTTOM NAV ════════════
+     Lives OUTSIDE pg-app so it works on both
+     landing and app pages.
+═══════════════════════════════════════════ -->
+<nav class="bottom-nav" id="bottom-nav">
+  <div class="bnav-item on" id="bn-home" onclick="bnavGo('home')">
+    <div class="bnav-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </div><span>Home</span>
+  </div>
+  <div class="bnav-item" id="bn-dash" onclick="bnavGo('dash')">
+    <div class="bnav-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+        <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+      </svg>
+    </div><span>Hub</span>
+  </div>
+  <div class="bnav-item" id="bn-intel" onclick="bnavGo('intel')">
+    <div class="bnav-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        <line x1="9" y1="7" x2="15" y2="7"/>
+        <line x1="9" y1="11" x2="15" y2="11"/>
+      </svg>
+    </div><span>Intel</span>
+  </div>
+  <div class="bnav-item" id="bn-bots-app" onclick="bnavGo('bots-app')">
+    <div class="bnav-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="8" width="18" height="13" rx="2"/>
+        <path d="M9 8V6a3 3 0 0 1 6 0v2"/>
+        <circle cx="9" cy="14" r="1.5" fill="currentColor" stroke="none"/>
+        <circle cx="15" cy="14" r="1.5" fill="currentColor" stroke="none"/>
+        <line x1="9" y1="17" x2="15" y2="17"/>
+      </svg>
+    </div><span>Bots</span>
+  </div>
+  <div class="bnav-item" id="bn-lab" onclick="bnavGo('lab')">
+    <div class="bnav-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 3h6v8l3.5 6.5A2 2 0 0 1 16.76 21H7.24a2 2 0 0 1-1.74-2.5L9 11V3z"/>
+        <line x1="9" y1="3" x2="15" y2="3"/>
+      </svg>
+    </div><span>Lab</span>
+  </div>
+  <div class="bnav-item" id="bn-alerts" onclick="bnavGo('alerts')" style="position:relative">
+    <div class="bnav-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      </svg>
+    </div>
+    <div class="bnav-badge"></div>
+    <span>Alerts</span>
+  </div>
+</nav>
 
 <!-- ══ ZENITH AGENT BUBBLE ════════════════ -->
 <div class="agent-wrap">
@@ -2153,17 +2225,23 @@ footer{
   const cv=document.getElementById('hero-canvas');
   if(!cv)return;
   const ctx=cv.getContext('2d');
-  let W,H,pts=[];
+  let W,H,pts=[],animId=null,isMobile=window.innerWidth<768;
+  /* reduce mesh density on mobile for performance */
+  const SPACING=isMobile?140:88;
   function resize(){W=cv.width=cv.offsetWidth;H=cv.height=cv.offsetHeight||innerHeight}
   function init(){
     pts=[];
-    const cols=Math.ceil(W/88)+1,rows=Math.ceil(H/88)+1;
+    const cols=Math.ceil(W/SPACING)+1,rows=Math.ceil(H/SPACING)+1;
     for(let r=0;r<rows;r++)for(let c=0;c<cols;c++)
-      pts.push({bx:c*88,by:r*88,ox:0,oy:0,vx:(Math.random()-.5)*.35,vy:(Math.random()-.5)*.35});
+      pts.push({bx:c*SPACING,by:r*SPACING,ox:0,oy:0,vx:(Math.random()-.5)*.35,vy:(Math.random()-.5)*.35});
   }
-  function draw(){
+  let lastTime=0;
+  function draw(ts){
+    /* throttle to ~30fps on mobile for battery */
+    if(isMobile && ts-lastTime<33){animId=requestAnimationFrame(draw);return}
+    lastTime=ts;
     ctx.clearRect(0,0,W,H);
-    const cols=Math.ceil(W/88)+1;
+    const cols=Math.ceil(W/SPACING)+1;
     pts.forEach((p,i)=>{
       p.ox+=p.vx;p.oy+=p.vy;
       if(Math.abs(p.ox)>22)p.vx*=-1;
@@ -2182,10 +2260,14 @@ footer{
       ctx.beginPath();ctx.arc(x,y,1.4,0,Math.PI*2);
       ctx.fillStyle='rgba(16,185,129,.22)';ctx.fill();
     });
-    requestAnimationFrame(draw);
+    animId=requestAnimationFrame(draw);
   }
-  resize();init();draw();
+  function startCanvas(){if(!animId){resize();init();animId=requestAnimationFrame(draw)}}
+  function stopCanvas(){if(animId){cancelAnimationFrame(animId);animId=null}}
+  resize();init();startCanvas();
   window.addEventListener('resize',()=>{resize();init()});
+  /* pause canvas when switching away from home page */
+  window._canvasCtrl={start:startCanvas,stop:stopCanvas};
 })();
 
 /* ── TICKER ─────────────────────────────── */
@@ -2221,7 +2303,11 @@ setInterval(()=>{
 (()=>{
   const el=document.getElementById('ctr');if(!el)return;
   let v=0;const T=466984,st=Math.ceil(T/80);
-  const tid=setInterval(()=>{v=Math.min(v+st,T);el.textContent=v.toLocaleString();if(v>=T)clearInterval(tid)},14);
+  function tick(){
+    v=Math.min(v+st,T);el.textContent=v.toLocaleString();
+    if(v<T)requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
 })();
 
 /* ── SPARKS ─────────────────────────────── */
@@ -2270,12 +2356,18 @@ const NEWS=[
 ];
 
 /* ── PAGE ROUTER ────────────────────────── */
+let _currentPage='home';
 function go(id){
+  _currentPage=id;
   document.querySelectorAll('.pg').forEach(p=>p.classList.toggle('on',p.id==='pg-'+id));
   document.querySelectorAll('.nav-a').forEach(a=>{
     a.classList.toggle('active',a.getAttribute('onclick')&&a.getAttribute('onclick').includes(`'${id}'`)&&!a.getAttribute('onclick').includes('Scroll'));
   });
   if(id==='app')buildApp();
+  /* pause canvas when not on home, resume when back */
+  if(window._canvasCtrl){id==='home'?_canvasCtrl.start():_canvasCtrl.stop()}
+  /* sync bottom nav with current page */
+  syncBnav(id==='home'?'home':_activeTab);
 }
 function goScroll(pg,sec){
   go(pg);
@@ -2303,16 +2395,32 @@ function aTab(id){
   });
 
   // sync bottom nav items
-  document.querySelectorAll('.bnav-item').forEach(b=>{
-    const oc=b.getAttribute('onclick')||'';
-    b.classList.toggle('on', oc.includes(`'${id}'`));
-  });
+  syncBnav(id);
 }
 
 /* bnav() now just calls aTab() so the two always agree */
 function bnav(el){
   // active class is handled inside aTab() — no-op kept for legacy onclick calls
   void el;
+}
+
+/* bnavGo: bottom nav tap handler — navigates to app+tab or home */
+function bnavGo(target){
+  if(target==='home'){
+    go('home');
+  } else {
+    if(_currentPage!=='app') go('app');
+    else aTab(target); // already on app page, just switch tab
+    aTab(target);
+  }
+}
+
+/* syncBnav: highlight the correct bottom nav item */
+function syncBnav(activeId){
+  document.querySelectorAll('.bnav-item').forEach(b=>{
+    const bId=b.id.replace('bn-','');
+    b.classList.toggle('on', bId===activeId);
+  });
 }
 
 /* nav switching is 100% CSS — no JS needed */
