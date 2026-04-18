@@ -161,7 +161,7 @@ function goScroll(pg,sec){
 /* ── APP TAB SWITCHER ─────────────────────── */
 let _activeTab = 'dash';
 
-function aTab(id){
+function _aTab(id){
   _activeTab = id;
   document.querySelectorAll('.app-tab').forEach(t=>t.classList.remove('on'));
   const panel=document.getElementById('at-'+id);if(panel)panel.classList.add('on');
@@ -171,6 +171,7 @@ function aTab(id){
   });
   syncBnav(id);
 }
+/* expose aTab globally for onclick handlers */
 
 function bnav(el){void el}
 
@@ -460,11 +461,11 @@ document.querySelectorAll('.filt-btn:not([onclick])').forEach(b=>{
 });
 
 /* ── INTEL TAB BUILD HOOK ───────────────── */
-const _origATab=aTab;
-function aTab(id){
+const _origATab=_aTab;
+_aTab=function(id){
   _origATab(id);
   if(id==='intel') buildIntel();
-}
+};
 function buildIntel(){
   const REPORTS=[
     {rank:1,tag:'FOREX',tCls:'tag-forex',title:'USD/JPY BREAKOUT: BoJ Decision Triggers High-Conviction Signal',meta:'14:12 · 6 min',score:94,sCls:'i-rs-hi',feat:true},
@@ -584,3 +585,15 @@ function buildIntel(){
     });
   });
 }
+
+/* ── GLOBAL EXPOSURES for onclick attributes ── */
+window.go=go;
+window.goScroll=goScroll;
+window.aTab=_aTab;
+window.bnavGo=bnavGo;
+window.bnav=bnav;
+window.toggleAgent=toggleAgent;
+window.sendAgent=sendAgent;
+window.sendLab=sendLab;
+window.labMsg=labMsg;
+window.sim=sim;
